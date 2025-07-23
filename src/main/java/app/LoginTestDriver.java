@@ -1,29 +1,26 @@
-import data_access.InMemoryUserDataAccessObject;
+package app;
+
+import data_access.DBUserDataAccessObject;
 import entity.CommonUserFactory;
-import interface_adapter.login.LoginController;
-import interface_adapter.login.LoginPresenter;
-import use_case.login.LoginInputBoundary;
-import use_case.login.LoginInteractor;
-import use_case.login.LoginOutputBoundary;
-import use_case.login.LoginUserDataAccessInterface;
+import entity.User;
 import entity.UserFactory;
+import use_case.login.LoginUserDataAccessInterface;
 
 public class LoginTestDriver {
     public static void main(String[] args) {
         UserFactory factory = new CommonUserFactory();
 
-        LoginUserDataAccessInterface dataAccess = new InMemoryUserDataAccessObject(factory);
+        LoginUserDataAccessInterface db = new DBUserDataAccessObject(factory);
 
-        LoginOutputBoundary presenter = new LoginPresenter();
-        LoginInputBoundary interactor = new LoginInteractor(dataAccess, presenter);
+        String testUsername = "Dylan";
+        User user = db.get(testUsername);
 
-
-        LoginController controller = new LoginController(interactor);
-
-
-        controller.login("admin", "1234");
-
-
-        controller.login("admin", "wrong");
+        if (user == null) {
+            System.out.println("No user found with username: " + testUsername);
+        } else {
+            System.out.println("User found!");
+            System.out.println("Username: " + user.getUsername());
+            System.out.println("Password: " + user.getPassword());
+        }
     }
 }

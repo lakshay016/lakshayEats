@@ -13,7 +13,6 @@ public class InMemoryUserDataAccessObject implements LoginUserDataAccessInterfac
 
     public InMemoryUserDataAccessObject(UserFactory factory) {
         this.factory = factory;
-        users.put("admin", factory.createUser("admin", "1234"));
     }
 
 
