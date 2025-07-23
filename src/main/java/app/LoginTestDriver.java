@@ -8,7 +8,7 @@ import use_case.login.LoginOutputBoundary;
 import use_case.login.LoginUserDataAccessInterface;
 import entity.UserFactory;
 
-public class AppBuilder {
+public class LoginTestDriver {
     public static void main(String[] args) {
         UserFactory factory = new CommonUserFactory();
 
