@@ -3,5 +3,8 @@ package entity;
 /**
  * registered user
  */
-public class User {
+public interface User {
+
+    String getName();
+    String getPassword();
 }
