@@ -1,29 +1,16 @@
 package interface_adapter.login;
 
-import use_case.login.LoginInputBoundary;
-import use_case.login.LoginInputData;
-
-/**
- code is from homework 5
- */
+import use_case.login.*;
 
 public class LoginController {
+    private final LoginInputBoundary interactor;
 
-    private final LoginInputBoundary loginUseCaseInteractor;
-
-    public LoginController(LoginInputBoundary loginUseCaseInteractor) {
-        this.loginUseCaseInteractor = loginUseCaseInteractor;
+    public LoginController(LoginInputBoundary interactor) {
+        this.interactor = interactor;
     }
 
-    /**
-     * Executes the Login Use Case.
-     * @param username the username of the user logging in
-     * @param password the password of the user logging in
-     */
-    public void execute(String username, String password) {
-        final LoginInputData loginInputData = new LoginInputData(
-                username, password);
-
-        loginUseCaseInteractor.execute(loginInputData);
+    public void login(String username, String password) {
+        LoginInputData inputData = new LoginInputData(username, password);
+        interactor.execute(inputData);
     }
 }

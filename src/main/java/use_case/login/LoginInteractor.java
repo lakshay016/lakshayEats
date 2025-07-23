@@ -1,37 +1,25 @@
 package use_case.login;
 
+import entity.CommonUser;
 import entity.User;
 
 public class LoginInteractor implements LoginInputBoundary {
-    private final LoginUserDataAccessInterface userDataAccessObject;
-    private final LoginOutputBoundary loginPresenter;
+    private final LoginUserDataAccessInterface userDataAccess;
+    private final LoginOutputBoundary presenter;
 
-    public LoginInteractor(LoginUserDataAccessInterface userDataAccessInterface,
-                           LoginOutputBoundary loginOutputBoundary) {
-        this.userDataAccessObject = userDataAccessInterface;
-        this.loginPresenter = loginOutputBoundary;
+    public LoginInteractor(LoginUserDataAccessInterface userDataAccess, LoginOutputBoundary presenter) {
+        this.userDataAccess = userDataAccess;
+        this.presenter = presenter;
     }
 
     @Override
-    public void execute(LoginInputData loginInputData) {
-        final String username = loginInputData.getUsername();
-        final String password = loginInputData.getPassword();
-        if (!userDataAccessObject.existsByName(username)) {
-            loginPresenter.prepareFailView(username + ": Account does not exist.");
-        }
-        else {
-            final String pwd = userDataAccessObject.get(username).getPassword();
-            if (!password.equals(pwd)) {
-                loginPresenter.prepareFailView("Incorrect password for \"" + username + "\".");
-            }
-            else {
+    public void execute(LoginInputData inputData) {
+        User user = userDataAccess.get(inputData.getUsername());
 
-                final User user = userDataAccessObject.get(loginInputData.getUsername());
-
-                userDataAccessObject.setCurrentUsername(user.getName());
-                final LoginOutputData loginOutputData = new LoginOutputData(user.getName(), false);
-                loginPresenter.prepareSuccessView(loginOutputData);
-            }
+        if (user == null || !user.getPassword().equals(inputData.getPassword())) {
+            presenter.prepareFailView("Incorrect username or password");
+        } else {
+            presenter.prepareSuccessView(new LoginOutputData(inputData.getUsername(),"Login Successful!"));
         }
     }
 }
