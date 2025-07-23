@@ -2,13 +2,15 @@ package use_case.login;
 
 public class LoginOutputData {
     private final String username;
-    private final Boolean useCaseFailed;
+    private final String message;
 
-    public LoginOutputData(String username, boolean useCaseFailed) {
+    public LoginOutputData(String username, String message) {
         this.username = username;
-        this.useCaseFailed = useCaseFailed;
+        this.message = message;
     }
     public String getUsername() {
         return username;
     }
+
+    public String getMessage() {return message; }
 }
