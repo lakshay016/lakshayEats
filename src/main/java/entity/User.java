@@ -6,13 +6,21 @@ import java.util.ArrayList;
  */
 public interface User {
     ArrayList<String> inbox = new ArrayList<>();
+    ArrayList<String> friendList = new ArrayList<>();
+    ArrayList<String> blockedList = new ArrayList<>();
 
 
 
 
     String getUsername();
     String getPassword();
-    Object sendMessage(User receiver, String message);
-    Object sendRecipe(User receiver, Recipe recipe);
+    void sendMessage(CommonUser receiver, String message);
+    void sendRecipe(CommonUser receiver, Recipe recipe);
+    void addFriend(CommonUser friend);
+    void removeFriend(CommonUser friend);
+    void blockUser(CommonUser friend);
+    void unblockUser(CommonUser friend);
+    void acceptFriend(CommonUser friend);
+    void rejectFriend(CommonUser friend);
 
 }
