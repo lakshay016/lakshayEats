@@ -1,4 +1,7 @@
-package main.java.use_case.RecipeEdit;
+package use_case.RecipeEdit;
 
 public interface RecipeEditOutputBoundary {
+
+    void prepareSuccessView(String message);
+    void prepareFailView(String errorMessage);
 }
