@@ -1,4 +1,4 @@
-package main.java.use_case.RecipeEdit;
+package use_case.RecipeEdit;
 
 import entity.Recipe;
 
