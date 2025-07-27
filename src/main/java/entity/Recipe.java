@@ -1,5 +1,7 @@
 package entity;
 
+import java.util.List;
+
 /**
  * recipe object. potential fields:
  * id, title/name, ingredients, steps/instructions,
