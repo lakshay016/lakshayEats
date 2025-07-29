@@ -147,7 +147,7 @@ public class FilterOptions {
     public Integer getNumber() { return number; }
     public void setNumber(Integer number) { this.number = number; }
 
-    public static class Builder {
+     public static class Builder {
         private FilterOptions opts = new FilterOptions();
 
         public Builder withCuisines(List<String> cuisines) {

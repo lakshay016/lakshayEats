@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Ingredients {
     private String name;
-    private double metricValue;
-    private String metricUnit;
+    private double amount;
+    private String unit;
 
     public String getName() {
         return name;
@@ -21,21 +21,21 @@ public class Ingredients {
         this.name = name;
     }
 
-    public double getMetricValue() {
-        return metricValue;
+    public double getAmount() {
+        return amount;
     }
 
     @JsonProperty("metricValue")
-    public void setMetricValue(double metricValue) {
-        this.metricValue = metricValue;
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 
-    public String getMetricUnit() {
-        return metricUnit;
+    public String getUnit() {
+        return unit;
     }
 
     @JsonProperty("metricUnit")
-    public void setMetricUnit(String metricUnit) {
-        this.metricUnit = metricUnit;
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 }

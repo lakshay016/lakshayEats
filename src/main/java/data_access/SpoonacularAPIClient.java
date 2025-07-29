@@ -129,9 +129,9 @@ public class SpoonacularAPIClient implements SearchDataAccessInterface {
         for (JsonNode i : ingrArr) {
             Ingredients im = new Ingredients();
             im.setName(i.path("name").asText());
-            JsonNode m = i.path("amount").path("metric");
-            im.setMetricValue(m.path("value").asDouble());
-            im.setMetricUnit (m.path("unit").asText());
+
+            im.setAmount(i.get("amount").asDouble());
+            im.setUnit(i.get("unit").asText());
             out.add(im);
         }
         return out;

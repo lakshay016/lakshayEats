@@ -4,9 +4,6 @@ import entity.SearchResult;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
 
 public class RecipeDetailsView extends JDialog {
     private final JButton backButton = new JButton("Back");
@@ -29,7 +26,7 @@ public class RecipeDetailsView extends JDialog {
         // Ingredients tab
         DefaultListModel<String> ingrModel = new DefaultListModel<>();
         for (var i : recipe.getIngredients()) {
-            ingrModel.addElement(String.format("%s: %.1f %s", i.getName(), i.getMetricValue(), i.getMetricUnit()));
+            ingrModel.addElement(String.format("%s: %.1f %s", i.getName(), i.getAmount(), i.getUnit()));
         }
         tabs.add("Ingredients", new JScrollPane(new JList<>(ingrModel)));
 

@@ -65,7 +65,7 @@ public class SearchDriver {
         System.out.println("\nIngredients:");
         for (Ingredients ing : sel.getIngredients()) {
             System.out.printf("  • %s – %.2f %s%n",
-                    ing.getName(), ing.getMetricValue(), ing.getMetricUnit());
+                    ing.getName(), ing.getAmount(), ing.getUnit());
         }
 
         // Nutrition
