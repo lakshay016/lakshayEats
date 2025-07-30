@@ -7,6 +7,7 @@ import entity.Ingredients;
 import entity.Nutrition;
 import entity.Instructions;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -56,6 +57,29 @@ public class SearchDriver {
             System.exit(2);
         }
 
+        formatter(sel);
+
+        try (Scanner sc = new Scanner(System.in)) {
+            System.out.print("\nEnter the recipe ID you want details for: ");
+            int loadId = sc.nextInt();
+
+            // Call your bulk-loader with a singleton list
+            List<Integer> ids = List.of(loadId);
+            List<SearchResult> results2 = client.loadIDs(ids);
+
+            if (results2.isEmpty()) {
+                System.out.println("No recipe found for ID: " + loadId);
+            } else {
+                // Format and print the first (and only) SearchResult
+                formatter(results2.get(0));
+            }
+        } catch (IOException e) {
+            System.err.println("Error fetching recipe details: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+    }
+    private static void formatter(SearchResult sel) {
         // print a very simple detail view
         System.out.println("\n=== " + sel.getTitle() + " ===");
         System.out.printf("Serves: %d people  •  Ready in: %d min%n",
