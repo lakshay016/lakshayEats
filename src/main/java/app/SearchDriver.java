@@ -7,8 +7,11 @@ import entity.Ingredients;
 import entity.Nutrition;
 import entity.Instructions;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class SearchDriver {
     public static void main(String[] args) throws Exception {
@@ -56,6 +59,36 @@ public class SearchDriver {
             System.exit(2);
         }
 
+        formatter(sel);
+
+        try (Scanner sc = new Scanner(System.in)) {
+            System.out.print("\nEnter the recipe ID(s) you want details for (comma‑separated): ");
+            String line = sc.nextLine();                            // read the whole line
+            List<Integer> ids = Arrays.stream(line.split(","))      // split on commas
+                    .map(String::trim)                                  // remove extra whitespace
+                    .filter(s -> !s.isEmpty())                         // skip blank entries
+                    .map(Integer::parseInt)                            // parse to Integer
+                    .collect(Collectors.toList());
+
+            List<SearchResult> results2 = client.loadIDs(ids);
+            if (results.isEmpty()) {
+                System.out.println("No recipe found for ID(s): " + ids);
+            } else {
+                // print each result
+                for (SearchResult res : results2) {
+                    formatter(res);
+                }
+            }
+        } catch (NumberFormatException nfe) {
+            System.err.println("One of the IDs wasn’t a valid integer: " + nfe.getMessage());
+        } catch (IOException e) {
+            System.err.println("Error fetching recipe details: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void formatter(SearchResult sel) {
         // print a very simple detail view
         System.out.println("\n=== " + sel.getTitle() + " ===");
         System.out.printf("Serves: %d people  •  Ready in: %d min%n",

@@ -1,5 +1,6 @@
 package data_access;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import entity.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +17,8 @@ import java.util.Map;
 
 public class SpoonacularAPIClient implements SearchDataAccessInterface {
     private static final String COMPLEX_SEARCH_URL = "https://api.spoonacular.com/recipes/complexSearch";
+    private static final String INFORMATION_BULk_URL = "https://api.spoonacular.com/recipes/informationBulk";
+
     private final String apiKey;
     private final OkHttpClient http = new OkHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
@@ -135,5 +138,58 @@ public class SpoonacularAPIClient implements SearchDataAccessInterface {
             out.add(im);
         }
         return out;
+    }
+    public List<SearchResult> loadIDs(List<Integer> ids_list) throws IOException {
+
+        String ids = ids_list.toString().replace("[", "").replace("]", "");
+        HttpUrl.Builder ub = HttpUrl.parse(INFORMATION_BULk_URL).newBuilder()
+                .addQueryParameter("apiKey", apiKey)
+                .addQueryParameter("ids", ids)
+                .addQueryParameter("includeNutrition", "true");
+
+        Request req = new Request.Builder()
+                .url(ub.build())
+                .get()
+                .build();
+
+        try (Response resp = http.newCall(req).execute()) {
+            if (!resp.isSuccessful()) {
+                throw new IOException("Unexpected code " + resp);
+            }
+
+            // parse the body
+            JsonNode root = mapper.readTree(resp.body().string());
+
+            // if it has a “results” field, unwrap it; otherwise root *is* the array
+            JsonNode arr = root.has("results") ? root.get("results") : root;
+            if (!arr.isArray()) {
+                throw new IOException("Unexpected JSON format: " + root);
+            }
+
+            List<SearchResult> results = new ArrayList<>();
+            for (JsonNode node : arr) {
+                // 0) Remove the raw‐HTML "instructions" field, so Jackson won't try to map it
+                if (node instanceof ObjectNode) {
+                    ((ObjectNode) node).remove("instructions");
+                }
+
+                // 1) Convert to SearchResult safely
+                SearchResult sr = mapper.treeToValue(node, SearchResult.class);
+
+                // 2) Populate your instructions list from the *analyzedInstructions* block
+                sr.setInstructions(extractInstructions(node.path("analyzedInstructions")));
+
+                // 3) Nutrition & weight
+                JsonNode nut = node.path("nutrition");
+                sr.setNutrition(extractNutrition(nut.path("nutrients")));
+                sr.setWeightPerServing(nut.path("weightPerServing").path("amount").asInt());
+
+                // 4) Ingredient metrics
+                sr.setIngredients(extractIngredients(nut.path("ingredients")));
+
+                results.add(sr);
+            }
+            return results;
+        }
     }
 }
