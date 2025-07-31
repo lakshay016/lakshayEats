@@ -1,9 +1,10 @@
-package view;
+package view.search;
 
 import entity.FilterOptions;
 import entity.SearchResult;
 import interface_adapter.search.SearchViewModel;
 import interface_adapter.search.SearchController;
+import view.RecipeDetailsView;
 
 import javax.swing.*;
 import java.awt.*;
