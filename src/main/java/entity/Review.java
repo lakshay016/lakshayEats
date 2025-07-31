@@ -8,20 +8,23 @@ import java.time.LocalDateTime;
  * string review, option to make public to store on recipe or remain private for user
  */
 public class Review {
-    private final String recipeId;
+    private final int recipeId;
     private final int rating;           // 0-10 scale
+    private final String author;
     private final String text;
     private final LocalDateTime lastReviewedAt;
 
-    public Review(String recipeId, int rating, String text, LocalDateTime lastReviewedAt) {
+    public Review(int recipeId, int rating,String author, String text, LocalDateTime lastReviewedAt) {
         this.recipeId = recipeId;
         this.rating = rating;
+        this.author = author;
         this.text = text;
         this.lastReviewedAt = lastReviewedAt;
     }
 
-    public String getRecipeId() { return recipeId; }
+    public int getRecipeId() { return recipeId; }
     public int getRating() { return rating; }
+    public String getAuthor() { return author; }
     public String getText() { return text; }
     public LocalDateTime getLastReviewedAt() { return lastReviewedAt; }
 }

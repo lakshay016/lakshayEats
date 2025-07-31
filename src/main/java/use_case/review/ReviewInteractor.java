@@ -18,6 +18,7 @@ public class ReviewInteractor implements ReviewInputBoundary {
         Review review = new Review(
                 inputData.getRecipeId(),
                 inputData.getRating(),
+                inputData.getAuthor(),
                 inputData.getText(),
                 now
         );
@@ -27,6 +28,7 @@ public class ReviewInteractor implements ReviewInputBoundary {
             presenter.presentSuccess(new ReviewOutputData(
                     inputData.getRecipeId(),
                     inputData.getRating(),
+                    inputData.getAuthor(),
                     inputData.getText(),
                     now
             ));

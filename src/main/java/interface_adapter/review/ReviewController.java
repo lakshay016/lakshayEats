@@ -10,7 +10,7 @@ public class ReviewController {
         this.interactor = interactor;
     }
 
-    public void addReview(String recipeId, int rating, String text) {
-        interactor.execute(new ReviewInputData(recipeId, rating, text));
+    public void addReview(int recipeId, int rating, String author, String text) {
+        interactor.execute(new ReviewInputData(recipeId, rating, author, text));
     }
 }
