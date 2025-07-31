@@ -54,8 +54,9 @@ public class RecipeCardPanel extends JPanel {
             protected ImageIcon doInBackground() throws Exception {
                 URL url = new URL(result.getImage());
                 BufferedImage img = ImageIO.read(url);
+                Dimension preferredSize = imageLabel.getPreferredSize();
                 Image scaled = img.getScaledInstance(
-                        imageLabel.getWidth(), imageLabel.getHeight(), Image.SCALE_SMOOTH);
+                        preferredSize.width, preferredSize.height, Image.SCALE_SMOOTH);
                 return new ImageIcon(scaled);
             }
 
