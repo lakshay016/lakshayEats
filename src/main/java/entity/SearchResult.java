@@ -23,6 +23,7 @@ public class SearchResult {
     @JsonIgnore
     private int weightPerServing;
 
+
     public int getId() {
         return id;
     }
