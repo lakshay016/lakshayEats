@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.util.logging.Logger;
 
 import entity.SearchResult;
 
@@ -33,9 +34,9 @@ public class RecipeCardPanel extends JPanel {
         add(infoPanel, BorderLayout.CENTER);
 
         // Click listener to open detail view
-        addMouseListener(new java.awt.event.MouseAdapter() {
+        addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 RecipeDetailDialog detail = new RecipeDetailDialog(
                         SwingUtilities.getWindowAncestor(RecipeCardPanel.this),
                         result);
@@ -65,6 +66,7 @@ public class RecipeCardPanel extends JPanel {
                 try {
                     imageLabel.setIcon(get());
                 } catch (Exception e) {
+                    Logger LOGGER = null;
                     LOGGER.warning("Failed to load recipe image: " + e.getMessage());
                     // Keep placeholder if loading fails
                 }

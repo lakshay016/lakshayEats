@@ -5,6 +5,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import entity.SearchResult;
 import entity.Ingredients;
