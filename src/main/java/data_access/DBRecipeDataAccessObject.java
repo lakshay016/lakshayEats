@@ -58,7 +58,7 @@ public class DBRecipeDataAccessObject implements RecipeDataAccessInterface {
             URL url = new URL(supabaseUrl + "/rest/v1/" + tableName + "?id=eq." + recipe.getId());
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-            conn.setRequestMethod("PATCH");
+            conn.setRequestMethod("PUT");
             conn.setRequestProperty("apikey", apiKey);
             conn.setRequestProperty("Authorization", "Bearer " + apiKey);
             conn.setRequestProperty("Content-Type", "application/json");
@@ -66,24 +66,29 @@ public class DBRecipeDataAccessObject implements RecipeDataAccessInterface {
             conn.setDoOutput(true);
 
             JSONObject json = new JSONObject();
+            json.put("id", recipe.getId());
             json.put("title", recipe.getName());
             json.put("ingredients", recipe.getIngredients());
             json.put("instructions", recipe.getSteps());
+            json.put("created_by", recipe.getAuthorId());
 
             try (OutputStream os = conn.getOutputStream()) {
                 byte[] input = json.toString().getBytes(StandardCharsets.UTF_8);
                 os.write(input, 0, input.length);
             }
             if (conn.getResponseCode() != 200) {
+
                 throw new IOException("Failed to edit recipe. HTTP code: " + conn.getResponseCode());
             }
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     @Override
     public Recipe getRecipe(int id) throws IOException {
-        URL url = new URL(supabaseUrl + "/rest/v1/" + tableName + "?id=eq." + id);
+        URL url = new URL(supabaseUrl + "/rest/v1/" + tableName + "?id=eq." + String.valueOf(id));
         // maybe I should add more filter to url
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
@@ -101,6 +106,7 @@ public class DBRecipeDataAccessObject implements RecipeDataAccessInterface {
         while ((line = reader.readLine()) != null) {
             sb.append(line);
         }
+
         reader.close();
 
         JSONArray array = new JSONArray(sb.toString());
@@ -108,10 +114,10 @@ public class DBRecipeDataAccessObject implements RecipeDataAccessInterface {
 
         JSONObject obj = array.getJSONObject(0);
         //null?
-        String name = obj.getString("name");
+        String name = obj.getString("title");
         JSONArray ingredientsJson = obj.getJSONArray("ingredients");
-        String steps = obj.getString("steps");
-        String authorId = obj.getString("authorId");
+        String steps = obj.getString("instructions");
+        String authorId = obj.getString("created_by");
         String s = String.valueOf(id);
 
         return new Recipe(
