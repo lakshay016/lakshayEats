@@ -49,7 +49,7 @@ public class FilterDialog extends JDialog {
     private JComboBox<String> sortDirCombo;
 
     public FilterDialog(JFrame parent) {
-        super(parent, "Filter Options", false);
+        super(parent, "Filter Options", true);
         setSize(600, 500);
         setLocationRelativeTo(parent);
 
