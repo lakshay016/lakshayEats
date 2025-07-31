@@ -34,7 +34,7 @@ public class SearchFrame extends JFrame {
             JOptionPane.showMessageDialog(this,
                     "Please set SPOONACULAR_API_KEY in your environment.",
                     "Missing API Key", JOptionPane.ERROR_MESSAGE);
-            System.exit(1);
+            throw new RuntimeException("Missing API Key: Please set SPOONACULAR_API_KEY in your environment.");
         }
         SpoonacularAPIClient client = new SpoonacularAPIClient(apiKey);
 
