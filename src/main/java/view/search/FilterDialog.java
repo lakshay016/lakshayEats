@@ -27,12 +27,12 @@ public class FilterDialog extends JDialog {
             "Tree Nut", "Wheat"
     };
     private static final String[] MEAL_TYPES = {
-            "main course", "side dish", "dessert", "appetizer", "salad",
+            "Any", "main course", "side dish", "dessert", "appetizer", "salad",
             "bread", "breakfast", "soup", "beverage", "sauce",
             "marinade", "fingerfood", "snack", "drink"
     };
     private static final String[] SORT_OPTIONS = {
-            "meta-score", "popularity", "healthiness", "price",
+            "default", "meta-score", "popularity", "healthiness", "price",
             "max-used-ingredients", "min-missing-ingredients", "calories",
             "protein", "carbohydrates", "total-fat", "sugar", "sodium", "fiber"
     };
@@ -153,12 +153,26 @@ public class FilterDialog extends JDialog {
                 .filter(e -> e.getValue().isSelected())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList()));
-        filterOptions.setType((String) typeCombo.getSelectedItem());
-        filterOptions.setMaxReadyTime((Integer) maxReadyTimeSpinner.getValue());
-        filterOptions.setMinServings((Integer) minServingsSpinner.getValue());
-        filterOptions.setMaxServings((Integer) maxServingsSpinner.getValue());
-        filterOptions.setSort((String) sortCombo.getSelectedItem());
+
+        // Handle meal type - set to null if "Any" is selected
+        String selectedType = (String) typeCombo.getSelectedItem();
+        filterOptions.setType("Any".equals(selectedType) ? null : selectedType);
+
+        // Handle numeric values - set to null if they are 0 (meaning no filter)
+        Integer maxReadyTime = (Integer) maxReadyTimeSpinner.getValue();
+        filterOptions.setMaxReadyTime(maxReadyTime == 0 ? null : maxReadyTime);
+        Integer minServings = (Integer) minServingsSpinner.getValue();
+        filterOptions.setMinServings(minServings == 0 ? null : minServings);
+        Integer maxServings = (Integer) maxServingsSpinner.getValue();
+        filterOptions.setMaxServings(maxServings == 0 ? null : maxServings);
+
+        // Handle sort options - set to null if "Default" is selected
+        String selectedSort = (String) sortCombo.getSelectedItem();
+        filterOptions.setSort("Default".equals(selectedSort) ? null : selectedSort);
+
+        // Always set sort direction (since you want "asc" as default)
         filterOptions.setSortDirection((String) sortDirCombo.getSelectedItem());
+
         dispose();
     }
 

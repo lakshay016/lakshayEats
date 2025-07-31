@@ -22,6 +22,8 @@ public class SearchFrame extends JFrame {
     private FilterOptions currentFilters;
     private final IngredientPanel ingredientPanel;
 
+    private FilterDialog filterDialog;
+
     private final JTextField searchField;
     private final JButton filtersButton;
     private final JButton searchButton;
@@ -104,6 +106,7 @@ public class SearchFrame extends JFrame {
 
     private void openFilterDialog() {
         FilterDialog dialog = new FilterDialog(this);
+        dialog.setModal(true);
         dialog.setVisible(true);
         FilterOptions opts = dialog.getFilterOptions();
         if (opts != null) {
@@ -112,12 +115,15 @@ public class SearchFrame extends JFrame {
     }
 
     private void performSearch() {
+
+        // build search
         String query = searchField.getText();
         FilterOptions filters = (currentFilters != null) ? currentFilters : new FilterOptions();
         filters.setIncludeIngredients(ingredientPanel.getIncludeIngredients());
         filters.setExcludeIngredients(ingredientPanel.getExcludeIngredients());
         controller.handleSearch(query, filters);
     }
+
 
     /**
      * Called by presenter via ViewModel when new results are available.

@@ -30,46 +30,82 @@ public class SpoonacularAPIClient implements SearchDataAccessInterface {
     @Override
     public List<SearchResult> searchByDish(String query, FilterOptions opts) throws IOException {
         // 1) Build URL with all non-null params
-        HttpUrl.Builder ub = HttpUrl.parse(COMPLEX_SEARCH_URL).newBuilder()
+        HttpUrl.Builder url = HttpUrl.parse(COMPLEX_SEARCH_URL).newBuilder()
                 .addQueryParameter("apiKey", apiKey)
                 .addQueryParameter("query", query);
 
         // a) primitive filters
-        if (opts.getCuisines() != null) ub.addQueryParameter("cuisine", String.join(",", opts.getCuisines()));
-        if (opts.getExcludeCuisines() != null)
-            ub.addQueryParameter("excludeCuisine", String.join(",", opts.getExcludeCuisines()));
-        if (opts.getDiets() != null) ub.addQueryParameter("diet", String.join(",", opts.getDiets()));
-        if (opts.getIntolerances() != null)
-            ub.addQueryParameter("intolerances", String.join(",", opts.getIntolerances()));
-        if (opts.getIncludeIngredients() != null)
-            ub.addQueryParameter("includeIngredients", String.join(",", opts.getIncludeIngredients()));
-        if (opts.getExcludeIngredients() != null)
-            ub.addQueryParameter("excludeIngredients", String.join(",", opts.getExcludeIngredients()));
-        if (opts.getType() != null) ub.addQueryParameter("type", opts.getType());
-        if (opts.getMaxReadyTime() != null) ub.addQueryParameter("maxReadyTime", opts.getMaxReadyTime().toString());
-        if (opts.getMinServings() != null) ub.addQueryParameter("minServings", opts.getMinServings().toString());
-        if (opts.getMaxServings() != null) ub.addQueryParameter("maxServings", opts.getMaxServings().toString());
-        if (opts.getSort() != null) ub.addQueryParameter("sort", opts.getSort());
-        if (opts.getSortDirection() != null) ub.addQueryParameter("sortDirection", opts.getSortDirection());
+        if (opts.getCuisines() != null && !opts.getCuisines().isEmpty()) {
+            url.addQueryParameter("cuisine", String.join(",", opts.getCuisines()));
+        }
+        if (opts.getExcludeCuisines() != null && !opts.getExcludeCuisines().isEmpty()) {
+            url.addQueryParameter("excludeCuisine", String.join(",", opts.getExcludeCuisines()));
+        }
+        if (opts.getDiets() != null && !opts.getDiets().isEmpty()) {
+            url.addQueryParameter("diet", String.join(",", opts.getDiets()));
+        }
+        if (opts.getIntolerances() != null && !opts.getIntolerances().isEmpty()) {
+            url.addQueryParameter("intolerances", String.join(",", opts.getIntolerances()));
+        }
+        if (opts.getIncludeIngredients() != null && !opts.getIncludeIngredients().isEmpty()) {
+            url.addQueryParameter("includeIngredients", String.join(",", opts.getIncludeIngredients()));
+        }
+        if (opts.getExcludeIngredients() != null && !opts.getExcludeIngredients().isEmpty()) {
+            url.addQueryParameter("excludeIngredients", String.join(",", opts.getExcludeIngredients()));
+        }
+        if (opts.getType() != null) {
+            url.addQueryParameter("type", opts.getType());
+        }
+        if (opts.getMaxReadyTime() != null) {
+            url.addQueryParameter("maxReadyTime", opts.getMaxReadyTime().toString());
+        }
+        if (opts.getMinServings() != null) {
+            url.addQueryParameter("minServings", opts.getMinServings().toString());
+        }
+        if (opts.getMaxServings() != null) {
+            url.addQueryParameter("maxServings", opts.getMaxServings().toString());
+        }
+        if (opts.getSort() != null) {
+            url.addQueryParameter("sort", opts.getSort());
+        }
+        if (opts.getSortDirection() != null) {
+            url.addQueryParameter("sortDirection", opts.getSortDirection());
+        }
+
         // b) flags
-        ub.addQueryParameter("instructionsRequired", opts.getInstructionsRequired().toString());
-        ub.addQueryParameter("fillIngredients", opts.getFillIngredients().toString());
-        ub.addQueryParameter("addRecipeInformation", opts.getAddRecipeInformation().toString());
-        ub.addQueryParameter("addRecipeInstructions", opts.getAddRecipeInstructions().toString());
-        ub.addQueryParameter("addRecipeNutrition", opts.getAddRecipeNutrition().toString());
+        url.addQueryParameter("instructionsRequired", opts.getInstructionsRequired().toString());
+        url.addQueryParameter("fillIngredients", opts.getFillIngredients().toString());
+        url.addQueryParameter("addRecipeInformation", opts.getAddRecipeInformation().toString());
+        url.addQueryParameter("addRecipeInstructions", opts.getAddRecipeInstructions().toString());
+        url.addQueryParameter("addRecipeNutrition", opts.getAddRecipeNutrition().toString());
+
         // c) pagination
-        if (opts.getOffset() != null) ub.addQueryParameter("offset", opts.getOffset().toString());
-        if (opts.getNumber() != null) ub.addQueryParameter("number", opts.getNumber().toString());
+        if (opts.getOffset() != null) {
+            url.addQueryParameter("offset", opts.getOffset().toString());
+        }
+        if (opts.getNumber() != null) {
+            url.addQueryParameter("number", opts.getNumber().toString());
+        }
+
         // d) nutrient ranges
         for (Map.Entry<Nutrients, Range<Double>> e : opts.getAllNutrientRanges().entrySet()) {
             Range<Double> r = e.getValue();
-            if (r.getMin() != null) ub.addQueryParameter(e.getKey().minKey(), String.valueOf(r.getMin()));
-            if (r.getMax() != null) ub.addQueryParameter(e.getKey().maxKey(), String.valueOf(r.getMax()));
+            if (r.getMin() != null) {
+                url.addQueryParameter(e.getKey().minKey(), String.valueOf(r.getMin()));
+            }
+            if (r.getMax() != null) {
+                url.addQueryParameter(e.getKey().maxKey(), String.valueOf(r.getMax()));
+            }
         }
+
+
+
         Request req = new Request.Builder()
-                .url(ub.build())
+                .url(url.build())
                 .get()
                 .build();
+
+        System.out.println("Calling complexSearch with URL: " + url);
 
         // 2) Execute
         try (Response resp = http.newCall(req).execute()) {

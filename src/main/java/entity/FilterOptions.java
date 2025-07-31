@@ -16,7 +16,7 @@ public class FilterOptions {
     private List<String> cuisines;
     private List<String> excludeCuisines;
 
-    // 2) Dietary restrictions
+    // 2) Dietary restrictionsa
     private List<String> diets;
     // [Gluten Free, Ketogenic, Vegetarian, Lacto-Vegetarian, Ovo-vegetarian, Vegan, Pescetarian,
     // Paleo, Primal, Low FODMAP, Whole30]
