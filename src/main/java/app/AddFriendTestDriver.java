@@ -12,7 +12,7 @@ public class AddFriendTestDriver {
 
         String user = "lakshay";
         String newFriend = "dylan";
-        // yo
+        String blockedFriend = "Bobby";
         try {
             JSONObject json = db.fetch(user);
 
@@ -27,9 +27,15 @@ public class AddFriendTestDriver {
 
             if (friends.contains(newFriend)) {
                 System.out.println(newFriend + " is already a friend of " + user);
-            } else {
+            }
+            if (blocked.contains(blockedFriend)) {
+                System.out.println(blockedFriend + " is already blocked by " + user);
+            }
+            else {
                 friends.add(newFriend);
+                blocked.add(blockedFriend);
                 db.save(user, friends, requests, blocked);
+                System.out.println(blockedFriend + " added to " + user + " 's blocked list");
                 System.out.println("Added " + newFriend + " to " + user + "'s friends");
             }
 
