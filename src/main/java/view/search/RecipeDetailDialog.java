@@ -104,7 +104,12 @@ public class RecipeDetailDialog extends JDialog {
             protected void done() {
                 try {
                     imageLabel.setIcon(get());
-                } catch (Exception ignored) {
+                } catch (Exception e) {
+                    Logger.getLogger(RecipeDetailDialog.class.getName()).log(Level.SEVERE, "Failed to load image", e);
+                    imageLabel.setIcon(new ImageIcon(new BufferedImage(
+                            imageLabel.getPreferredSize().width,
+                            imageLabel.getPreferredSize().height,
+                            BufferedImage.TYPE_INT_ARGB)));
                 }
             }
         }.execute();
