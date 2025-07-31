@@ -64,6 +64,7 @@ public class RecipeCardPanel extends JPanel {
                 try {
                     imageLabel.setIcon(get());
                 } catch (Exception e) {
+                    LOGGER.warning("Failed to load recipe image: " + e.getMessage());
                     // Keep placeholder if loading fails
                 }
             }
