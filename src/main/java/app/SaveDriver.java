@@ -14,7 +14,6 @@ import java.util.List;
 
 public class SaveDriver {
     public static void main(String[] args) {
-        // === 1. Setup ViewModel, Presenter, DAO, Interactor, Controller ===
         SaveViewModel viewModel = new SaveViewModel();
         SavePresenter presenter = new SavePresenter(viewModel);
         DBRecipeDataAccessObject recipeDAO = new DBRecipeDataAccessObject();
@@ -22,13 +21,11 @@ public class SaveDriver {
         SaveController controller = new SaveController(interactor);
 
 
-        // === 2. Setup current user (mocked login) ===
         DBUserDataAccessObject userDAO = new DBUserDataAccessObject(new CommonUserFactory());
-        String mockUsername = "a"; // Assume this exists in your Supabase
+        String mockUsername = "a";
         userDAO.setCurrentUsername(mockUsername);
 
 
-        // === 3. Create mock SearchResult ===
         String name1 = "Flour";
         double amount1 = 1.0;
         String unit1 = "cups";
@@ -100,10 +97,8 @@ public class SaveDriver {
         mockRecipe.setIngredients(Arrays.asList(flour, eggs, milk));
 
 
-        // === 4. Save the recipe ===
         controller.save(mockUsername, mockRecipe);
 
-        // === 5. Output result ===
         System.out.println("\n Save Test:");
         System.out.println(viewModel.getSaveState().getMessage());
     }

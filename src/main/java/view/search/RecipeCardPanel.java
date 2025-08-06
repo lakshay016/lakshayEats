@@ -23,13 +23,11 @@ public class RecipeCardPanel extends JPanel {
         setLayout(new BorderLayout(8, 8));
         setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
-        // Image placeholder, replaced asynchronously
         imageLabel = new JLabel();
         imageLabel.setPreferredSize(new Dimension(100, 100));
         add(imageLabel, BorderLayout.WEST);
         loadImageAsync();
 
-        // Info panel
         JPanel infoPanel = new JPanel(new GridLayout(0, 1));
         JLabel titleLabel = new JLabel(result.getTitle());
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
@@ -37,7 +35,6 @@ public class RecipeCardPanel extends JPanel {
         infoPanel.add(new JLabel("Ready in: " + result.getReadyInMinutes() + " mins"));
         add(infoPanel, BorderLayout.CENTER);
 
-        // Click listener to open detail view
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -49,10 +46,6 @@ public class RecipeCardPanel extends JPanel {
         });
     }
 
-    /**
-     * Loads the recipe image on a background thread,
-     * then sets it on the imageLabel when done.
-     */
     private void loadImageAsync() {
         new SwingWorker<ImageIcon, Void>() {
             @Override
@@ -71,7 +64,6 @@ public class RecipeCardPanel extends JPanel {
                     imageLabel.setIcon(get());
                 } catch (Exception e) {
                     LOGGER.warning("Failed to load recipe image: " + e.getMessage());
-                    // Keep placeholder if loading fails
                 }
             }
         }.execute();

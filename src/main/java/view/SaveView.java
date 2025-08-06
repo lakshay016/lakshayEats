@@ -137,19 +137,14 @@ public class SaveView extends JFrame {
         SwingUtilities.invokeLater(() -> {
             String userId = "demo_user";
 
-            // Create your data access implementation (replace with your actual class)
             SaveDataAccessInterface dataAccess = new DBRecipeDataAccessObject();
 
-            // Create the ViewModel
             SaveViewModel viewModel = new SaveViewModel();
 
-            // Create the Presenter
             SavePresenter presenter = new SavePresenter(viewModel);
 
-            // Create the Interactor
             SaveInteractor interactor = new SaveInteractor(dataAccess, presenter);
 
-            // Create the Controller
             SaveController saveController = new SaveController(interactor);
             new SaveView("demo_user", saveController);
         });
