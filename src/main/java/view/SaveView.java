@@ -122,7 +122,7 @@ public class SaveView extends JFrame {
             resultsPanel.add(noResults);
         } else {
             for (SearchResult r : recipes) {
-                RecipeCardPanel card = new RecipeCardPanel(r, saveController);
+                RecipeCardPanel card = new RecipeCardPanel(r, saveController, userId);
                 card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
                 card.setPreferredSize(new Dimension(700, 120));
                 resultsPanel.add(card);
