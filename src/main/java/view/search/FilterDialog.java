@@ -32,7 +32,7 @@ public class FilterDialog extends JDialog {
             "marinade", "fingerfood", "snack", "drink"
     };
     private static final String[] SORT_OPTIONS = {
-            "default", "meta-score", "popularity", "healthiness", "price",
+            "Default", "meta-score", "popularity", "healthiness", "price",
             "max-used-ingredients", "min-missing-ingredients", "calories",
             "protein", "carbohydrates", "total-fat", "sugar", "sodium", "fiber"
     };
@@ -53,6 +53,11 @@ public class FilterDialog extends JDialog {
         setSize(600, 500);
         setLocationRelativeTo(parent);
 
+        initializeComponents();
+        loadUserPreferences();
+    }
+
+    private void initializeComponents() {
         JTabbedPane tabs = new JTabbedPane();
 
         // Cuisine tab
@@ -125,14 +130,117 @@ public class FilterDialog extends JDialog {
         JPanel buttonPanel = new JPanel();
         JButton okBtn = new JButton("OK");
         JButton cancelBtn = new JButton("Cancel");
+        JButton resetBtn = new JButton("Reset");
         buttonPanel.add(okBtn);
         buttonPanel.add(cancelBtn);
+        buttonPanel.add(resetBtn);
+
         okBtn.addActionListener(e -> onSave());
         cancelBtn.addActionListener(e -> onCancel());
+        resetBtn.addActionListener(e -> resetFilters());
 
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(tabs, BorderLayout.CENTER);
         getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private void loadUserPreferences() {
+        try {
+            // TODO: Replace with actual logged-in user detection
+            // String username = loggedInViewModel.getState().getUsername();
+            String username = "testuser"; // Placeholder for testing
+
+            // TODO: Uncomment when database is ready
+            /*
+            DBUserPreferenceDataAccessObject db = new DBUserPreferenceDataAccessObject();
+            JSONObject data = db.fetchRestrictionsAndIntolerances(username);
+
+            if (data != null) {
+                JSONObject restrictions = data.getJSONObject("preferences");
+                JSONObject intolerances = data.getJSONObject("intolerances");
+
+                // Load dietary restrictions (diets)
+                if (restrictions != null) {
+                    for (String diet : DIETS) {
+                        if (restrictions.has(diet.toLowerCase().replace(" ", "_")) &&
+                            restrictions.getBoolean(diet.toLowerCase().replace(" ", "_"))) {
+                            JCheckBox checkbox = dietCheckboxes.get(diet);
+                            if (checkbox != null) {
+                                checkbox.setSelected(true);
+                            }
+                        }
+                    }
+                }
+
+                // Load intolerances
+                if (intolerances != null) {
+                    for (String intolerance : INTOLERANCES) {
+                        if (intolerances.has(intolerance.toLowerCase().replace(" ", "_")) &&
+                            intolerances.getBoolean(intolerance.toLowerCase().replace(" ", "_"))) {
+                            JCheckBox checkbox = intoleranceCheckboxes.get(intolerance);
+                            if (checkbox != null) {
+                                checkbox.setSelected(true);
+                            }
+                        }
+                    }
+                }
+            }
+            */
+
+            // TEST DATA - Remove this when database is connected
+            loadTestPreferences();
+
+        } catch (Exception e) {
+            System.err.println("Error loading user preferences: " + e.getMessage());
+            e.printStackTrace();
+            // Continue without preferences if there's an error
+        }
+    }
+
+    // TEST METHOD - Remove when database is connected
+    private void loadTestPreferences() {
+        // Test dietary preferences
+        JCheckBox vegetarianBox = dietCheckboxes.get("Vegetarian");
+        if (vegetarianBox != null) {
+            vegetarianBox.setSelected(true);
+        }
+
+        JCheckBox glutenFreeBox = dietCheckboxes.get("Gluten Free");
+        if (glutenFreeBox != null) {
+            glutenFreeBox.setSelected(true);
+        }
+
+        // Test intolerances
+        JCheckBox dairyBox = intoleranceCheckboxes.get("Dairy");
+        if (dairyBox != null) {
+            dairyBox.setSelected(true);
+        }
+
+        JCheckBox nutBox = intoleranceCheckboxes.get("Tree Nut");
+        if (nutBox != null) {
+            nutBox.setSelected(true);
+        }
+
+        System.out.println("Test preferences loaded: Vegetarian, Gluten Free, Dairy intolerance, Tree Nut intolerance");
+    }
+
+    private void resetFilters() {
+        // Clear all checkboxes
+        cuisineCheckboxes.values().forEach(cb -> cb.setSelected(false));
+        excludeCuisineCheckboxes.values().forEach(cb -> cb.setSelected(false));
+        dietCheckboxes.values().forEach(cb -> cb.setSelected(false));
+        intoleranceCheckboxes.values().forEach(cb -> cb.setSelected(false));
+
+        // Reset combo boxes and spinners to defaults
+        typeCombo.setSelectedIndex(0); // "Any"
+        sortCombo.setSelectedIndex(0); // "Default"
+        sortDirCombo.setSelectedIndex(0); // "asc"
+        maxReadyTimeSpinner.setValue(0);
+        minServingsSpinner.setValue(0);
+        maxServingsSpinner.setValue(0);
+
+        // Reload user preferences after reset
+        loadUserPreferences();
     }
 
     private void onSave() {
