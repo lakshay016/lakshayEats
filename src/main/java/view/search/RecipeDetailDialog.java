@@ -12,6 +12,7 @@ import entity.SearchResult;
 import entity.Ingredients;
 import entity.Instructions;
 import entity.Nutrition;
+import interface_adapter.save.SaveController;
 
 /**
  * Dialog showing full recipe details.
@@ -19,7 +20,7 @@ import entity.Nutrition;
 public class RecipeDetailDialog extends JDialog {
     private final JLabel imageLabel;
 
-    public RecipeDetailDialog(Window parent, SearchResult result) {
+    public RecipeDetailDialog(Window parent, SearchResult result, SaveController saveController) {
         super(parent, "Recipe Details", ModalityType.APPLICATION_MODAL);
         setSize(600, 700);
         setLocationRelativeTo(parent);
@@ -82,7 +83,15 @@ public class RecipeDetailDialog extends JDialog {
         getContentPane().setLayout(new BorderLayout(10,10));
         getContentPane().add(topPanel, BorderLayout.NORTH);
         getContentPane().add(centerPanel, BorderLayout.CENTER);
-
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton saveButton = new JButton("Save Recipe");
+        saveButton.addActionListener(e -> {
+            String username = "demo_user"; // Replace with real user if applicable
+            saveController.save(username, result);
+            JOptionPane.showMessageDialog(this, "Recipe saved successfully!");
+        });
+        bottomPanel.add(saveButton);
+        getContentPane().add(bottomPanel, BorderLayout.SOUTH);
         // Show dialog
         setVisible(true);
     }
