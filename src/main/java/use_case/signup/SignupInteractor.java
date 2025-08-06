@@ -22,7 +22,12 @@ public class SignupInteractor implements SignupInputBoundary {
     public void execute(SignupInputData inputData) {
         if (userDataAccess.existsByName(inputData.getUsername())) {
             presenter.prepareFailView("Username already exists.");
+        } else if (inputData.getUsername() == null || inputData.getUsername().isEmpty()) {
+            presenter.prepareFailView("Username is required.");
+        }else if (inputData.getPassword() == null || inputData.getPassword().isEmpty()) {
+            presenter.prepareFailView("Password is required.");
         }
+
         else if (!inputData.getPassword().equals(inputData.getRepeatPassword())) {
             presenter.prepareFailView("Passwords don't match.");
         }
