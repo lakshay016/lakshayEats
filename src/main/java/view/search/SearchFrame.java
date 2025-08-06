@@ -162,7 +162,7 @@ public class SearchFrame extends JFrame {
             resultsPanel.add(noResults);
         } else {
             for (SearchResult r : results) {
-                RecipeCardPanel card = new RecipeCardPanel(r, this.saveController);
+                RecipeCardPanel card = new RecipeCardPanel(r, this.saveController, userId);
                 // constrain height
                 card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
                 card.setPreferredSize(new Dimension(600, 120));

@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import entity.SearchResult;
 import interface_adapter.save.SaveController;
+import view.LoggedInView;
 
 public class RecipeCardPanel extends JPanel {
     private static final Logger LOGGER = Logger.getLogger(RecipeCardPanel.class.getName());
@@ -17,7 +18,7 @@ public class RecipeCardPanel extends JPanel {
     private final JLabel imageLabel;
     private final SaveController saveController;
 
-    public RecipeCardPanel(SearchResult result, SaveController saveController) {
+    public RecipeCardPanel(SearchResult result, SaveController saveController, String username) {
         this.result = result;
         this.saveController = saveController;
         setLayout(new BorderLayout(8, 8));
@@ -40,7 +41,7 @@ public class RecipeCardPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 RecipeDetailDialog detail = new RecipeDetailDialog(
                         SwingUtilities.getWindowAncestor(RecipeCardPanel.this),
-                        result, saveController);
+                        result, saveController, username);
                 detail.setVisible(true);
             }
         });

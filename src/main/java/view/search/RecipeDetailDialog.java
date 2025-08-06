@@ -19,9 +19,11 @@ import interface_adapter.save.SaveController;
  */
 public class RecipeDetailDialog extends JDialog {
     private final JLabel imageLabel;
+    private final String username;
 
-    public RecipeDetailDialog(Window parent, SearchResult result, SaveController saveController) {
+    public RecipeDetailDialog(Window parent, SearchResult result, SaveController saveController, String username) {
         super(parent, "Recipe Details", ModalityType.APPLICATION_MODAL);
+        this.username = username;
         setSize(600, 700);
         setLocationRelativeTo(parent);
 
@@ -86,7 +88,7 @@ public class RecipeDetailDialog extends JDialog {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton saveButton = new JButton("Save Recipe");
         saveButton.addActionListener(e -> {
-            String username = "demo_user"; // Replace with real user if applicable
+            // Replace with real user if applicable
             saveController.save(username, result);
             JOptionPane.showMessageDialog(this, "Recipe saved successfully!");
         });
