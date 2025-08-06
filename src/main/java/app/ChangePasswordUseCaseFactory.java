@@ -1,5 +1,6 @@
 package app;
 
+import data_access.DBUserDataAccessObject;
 import entity.CommonUserFactory;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
@@ -23,11 +24,11 @@ public final class ChangePasswordUseCaseFactory {
     public static LoggedInView create(
             ViewManagerModel viewManagerModel,
             LoggedInViewModel loggedInViewModel,
-            ChangePasswordUserDataAccessInterface userDataAccessObject) {
+            ChangePasswordUserDataAccessInterface userDataAccessObject, DBUserDataAccessObject dbUserDataAccessObject) {
 
         final ChangePasswordController changePasswordController =
                 createChangePasswordUseCase(viewManagerModel, loggedInViewModel, userDataAccessObject);
-        return new LoggedInView(loggedInViewModel, changePasswordController);
+        return new LoggedInView(loggedInViewModel, changePasswordController, viewManagerModel, dbUserDataAccessObject);
 
     }
 

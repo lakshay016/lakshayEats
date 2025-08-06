@@ -10,6 +10,6 @@ public class LabelTextPanel extends JPanel {
         this.add(label);
         this.add(field);
         this.setOpaque(true);
-        this.setBackground(new Color(200, 3, 200));
+        this.setBackground(new Color(255, 150, 255));
     }
 }
