@@ -5,8 +5,17 @@ import java.awt.*;
 import java.util.List;
 import java.beans.PropertyChangeEvent;
 
+import data_access.DBRecipeDataAccessObject;
 import entity.FilterOptions;
 import entity.SearchResult;
+import interface_adapter.save.SaveController;
+import interface_adapter.save.SavePresenter;
+import interface_adapter.save.SaveViewModel;
+import use_case.save.SaveDataAccessInterface;
+import use_case.save.SaveInputBoundary;
+import use_case.save.SaveInteractor;
+import use_case.save.SaveOutputBoundary;
+import view.SaveView;
 import view.search.FilterDialog;
 import view.search.IngredientPanel;
 import view.search.RecipeCardPanel;
@@ -21,6 +30,7 @@ public class SearchFrame extends JFrame {
     private final SearchController controller;
     private FilterOptions currentFilters;
     private final IngredientPanel ingredientPanel;
+    private final SaveController saveController;
 
     private FilterDialog filterDialog;
 
@@ -28,8 +38,13 @@ public class SearchFrame extends JFrame {
     private final JButton filtersButton;
     private final JButton searchButton;
     private final JPanel resultsPanel;
+    private SaveView saveViewInstance = null;
+    private String userId;
 
-    public SearchFrame() {
+
+    public SearchFrame(String userId, SaveController saveController) {
+        this.saveController = saveController;
+        this.userId = userId;
         // Load API key
         String apiKey = System.getenv("SPOONACULAR_API_KEY");
         if (apiKey == null) {
@@ -64,8 +79,18 @@ public class SearchFrame extends JFrame {
         JPanel topBar = new JPanel(new BorderLayout(5, 5));
         searchField = new JTextField();
         filtersButton = new JButton("Filters...");
+
+        JButton savedRecipesButton = new JButton("My Saved Recipes");
+        JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        rightButtons.add(filtersButton);
+        rightButtons.add(savedRecipesButton);
+
+        topBar.add(rightButtons, BorderLayout.EAST);
+
         topBar.add(searchField, BorderLayout.CENTER);
-        topBar.add(filtersButton, BorderLayout.EAST);
+
+        savedRecipesButton.addActionListener(e -> openSaveView());
+
 
         // Ingredients label and panel
         JLabel ingredientsLabel = new JLabel("Ingredients");
@@ -137,7 +162,7 @@ public class SearchFrame extends JFrame {
             resultsPanel.add(noResults);
         } else {
             for (SearchResult r : results) {
-                RecipeCardPanel card = new RecipeCardPanel(r);
+                RecipeCardPanel card = new RecipeCardPanel(r, this.saveController);
                 // constrain height
                 card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
                 card.setPreferredSize(new Dimension(600, 120));
@@ -149,7 +174,35 @@ public class SearchFrame extends JFrame {
         resultsPanel.repaint();
     }
 
+    private void openSaveView() {
+        if (saveViewInstance == null || !saveViewInstance.isDisplayable()) {
+            saveViewInstance = new SaveView(userId, saveController);
+            // Optional: position the SaveView window beside SearchFrame window
+            saveViewInstance.setLocationRelativeTo(null);
+
+            saveViewInstance.setVisible(true);
+        } else {
+            saveViewInstance.toFront();
+            saveViewInstance.requestFocus();
+        }
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(SearchFrame::new);
+        SwingUtilities.invokeLater(() -> {
+            // Create or get SaveController here (replace with your actual setup)
+            SaveViewModel viewModel = new SaveViewModel();
+            SaveDataAccessInterface dataAccess = new DBRecipeDataAccessObject();
+
+            // Create the ViewModel
+
+            // Create the Presenter
+            SavePresenter presenter = new SavePresenter(viewModel);
+
+            SaveInputBoundary interactor = new SaveInteractor(dataAccess, presenter);  // instantiate your interactor
+            SaveController saveController = new SaveController(interactor);
+
+            // Pass SaveController to SearchFrame
+            new SearchFrame("demo_user", saveController);
+        });
     }
 }

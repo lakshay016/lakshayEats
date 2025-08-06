@@ -9,13 +9,17 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 import entity.SearchResult;
+import interface_adapter.save.SaveController;
 
 public class RecipeCardPanel extends JPanel {
+    private static final Logger LOGGER = Logger.getLogger(RecipeCardPanel.class.getName());
     private final SearchResult result;
     private final JLabel imageLabel;
+    private final SaveController saveController;
 
-    public RecipeCardPanel(SearchResult result) {
+    public RecipeCardPanel(SearchResult result, SaveController saveController) {
         this.result = result;
+        this.saveController = saveController;
         setLayout(new BorderLayout(8, 8));
         setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
@@ -39,7 +43,7 @@ public class RecipeCardPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 RecipeDetailDialog detail = new RecipeDetailDialog(
                         SwingUtilities.getWindowAncestor(RecipeCardPanel.this),
-                        result);
+                        result, saveController);
                 detail.setVisible(true);
             }
         });
@@ -66,7 +70,6 @@ public class RecipeCardPanel extends JPanel {
                 try {
                     imageLabel.setIcon(get());
                 } catch (Exception e) {
-                    Logger LOGGER = null;
                     LOGGER.warning("Failed to load recipe image: " + e.getMessage());
                     // Keep placeholder if loading fails
                 }
