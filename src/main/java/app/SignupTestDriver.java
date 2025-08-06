@@ -18,9 +18,9 @@ public class SignupTestDriver {
         SignupInputBoundary interactor = new SignupInteractor(db, presenter, factory);
         SignupController controller = new SignupController(interactor);
 
-        String testUsername = "d";
-        String testPassword = "12345";
+        String testUsername = "jim";
+        String testPassword = "123";
 
-        controller.signup(testUsername, testPassword);
+        controller.signup(testUsername, testPassword, testPassword);
     }
 }

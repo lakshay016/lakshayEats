@@ -2,6 +2,7 @@ package use_case.signup;
 
 import entity.UserFactory;
 import entity.User;
+import use_case.login.LoginInteractor;
 import use_case.login.LoginUserDataAccessInterface;
 
 public class SignupInteractor implements SignupInputBoundary {
@@ -21,10 +22,17 @@ public class SignupInteractor implements SignupInputBoundary {
     public void execute(SignupInputData inputData) {
         if (userDataAccess.existsByName(inputData.getUsername())) {
             presenter.prepareFailView("Username already exists.");
-        } else {
+        }
+        else if (!inputData.getPassword().equals(inputData.getRepeatPassword())) {
+            presenter.prepareFailView("Passwords don't match.");
+        }
+        else {
             User newUser = factory.createUser(inputData.getUsername(), inputData.getPassword());
             userDataAccess.save(newUser);
-            presenter.prepareSuccessView(new SignupOutputData("Signup successful!"));
+            presenter.prepareSuccessView(new SignupOutputData(inputData.getUsername(),"Signup successful!"));
         }
+    }
+    public void switchToLoginView() {
+        presenter.switchToLoginView();
     }
 }

@@ -2,21 +2,34 @@ package data_access;
 
 import entity.User;
 import entity.UserFactory;
+import okhttp3.*;
+import org.json.JSONException;
+import use_case.change_password.ChangePasswordUserDataAccessInterface;
 import use_case.login.LoginUserDataAccessInterface;
+import okhttp3.RequestBody;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import use_case.signup.SignupUserDataAccessInterface;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class DBUserDataAccessObject implements LoginUserDataAccessInterface {
+public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
+        LoginUserDataAccessInterface, ChangePasswordUserDataAccessInterface {
+    private static final int SUCCESS_CODE = 200;
+    private static final String CONTENT_TYPE_LABEL = "Content-Type";
+    private static final String CONTENT_TYPE_JSON = "application/json";
+    private static final String STATUS_CODE_LABEL = "status_code";
+    private static final String USERNAME = "username";
+    private static final String PASSWORD = "password";
+    private static final String MESSAGE = "message";
+    private final UserFactory factory;
     private final String supabaseUrl = "https://heaxbbjincrnnimobhdc.supabase.co";
     private final String apiKey = System.getenv("SUPABASE_API_KEY");
     private final String tableName = "users";
-    private final UserFactory factory;
     private String currentUsername = null;
 
     public DBUserDataAccessObject(UserFactory factory) {
@@ -110,5 +123,43 @@ public class DBUserDataAccessObject implements LoginUserDataAccessInterface {
     @Override
     public void setCurrentUsername(String username) {
         this.currentUsername = username;
+    }
+
+    public void changePassword(User user) {
+        final OkHttpClient client = new OkHttpClient().newBuilder().build();
+
+        final MediaType mediaType = MediaType.parse("application/json");
+
+        final JSONObject requestBody = new JSONObject();
+        requestBody.put("password", user.getPassword());
+
+        final RequestBody body = RequestBody.create(mediaType, requestBody.toString());
+
+        final HttpUrl url = HttpUrl.parse(supabaseUrl + "/rest/v1/" + "/users")
+                .newBuilder()
+                .addQueryParameter("username", "eq." + user.getUsername())
+                .build();
+
+        final Request request = new Request.Builder()
+                .url(url)
+                .method("PATCH", body)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("apikey", apiKey)
+                .addHeader("Authorization", "Bearer " + apiKey)
+                .build();
+
+        try {
+            final Response response = client.newCall(request).execute();
+            final String responseBodyStr = response.body().string();
+
+            if (response.isSuccessful()) {
+                System.out.println("Password changed successfully!");
+            } else {
+                System.err.println("Failed: " + responseBodyStr);
+                throw new RuntimeException("Error: " + responseBodyStr);
+            }
+        } catch (IOException | JSONException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }
