@@ -13,8 +13,8 @@ public class SearchPresenter implements SearchOutputBoundary {
 
     @Override
     public void prepareSuccessView(SearchOutputData output) {
-        //SearchState newState = new SearchState();
-        SearchState state = viewModel.getState();
+        SearchState state = new SearchState();
+        //SearchState state = viewModel.getState();
         state.setLoading(false);
         state.setErrorMessage(null);
         state.setResults(output.getResults());
@@ -23,8 +23,8 @@ public class SearchPresenter implements SearchOutputBoundary {
 
     @Override
     public void prepareFailView(String error) {
-        //SearchState newState = new SearchState();
-        SearchState state = viewModel.getState();
+        SearchState state = new SearchState();
+        //SearchState state = viewModel.getState();
         state.setLoading(false);
         state.setErrorMessage(error);
         viewModel.publishState(state);

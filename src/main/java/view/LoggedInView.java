@@ -84,6 +84,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         passwordInputField.setPreferredSize(new Dimension(200, 30));
         searchButton.addActionListener(e -> {
             // Create and show SearchFrame
+
             String apiKey = System.getenv("SPOONACULAR_API_KEY");
             if (apiKey == null) {
                 JOptionPane.showMessageDialog(this,
@@ -110,6 +111,9 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
             }
             SearchFrame searchFrame = new SearchFrame(currentUser, saveController);
             searchFrame.setVisible(true);
+            //closing main window
+            SwingUtilities.getWindowAncestor(this).setVisible(false);
+
         });
         buttons.add(searchButton);
 

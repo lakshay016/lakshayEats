@@ -23,7 +23,7 @@ import interface_adapter.search.SearchViewModel;
 import interface_adapter.search.SearchPresenter;
 import use_case.search.SearchInteractor;
 import data_access.SpoonacularAPIClient;
-import view.RecipeCardPanel;
+import view.search.RecipeCardPanel;
 
 public class SearchFrame extends JFrame {
     private final SearchViewModel viewModel;
@@ -180,10 +180,17 @@ public class SearchFrame extends JFrame {
     }
 
     private void openSaveView() {
+        this.setVisible(false);
+
         if (saveViewInstance == null || !saveViewInstance.isDisplayable()) {
             saveViewInstance = new SaveView(userId, saveController);
-            // Optional: position the SaveView window beside SearchFrame window
             saveViewInstance.setLocationRelativeTo(null);
+            saveViewInstance.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent e) {
+                    SearchFrame.this.setVisible(true);
+                }
+            });
 
             saveViewInstance.setVisible(true);
         } else {

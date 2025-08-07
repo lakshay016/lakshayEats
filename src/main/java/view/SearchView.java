@@ -4,6 +4,9 @@ import entity.FilterOptions;
 import entity.SearchResult;
 import interface_adapter.search.SearchViewModel;
 import interface_adapter.search.SearchController;
+import interface_adapter.search.SearchPresenter;
+import use_case.search.SearchInteractor;
+import data_access.SpoonacularAPIClient;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +15,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+
+//DO NOT DELETE THIS CLASS
 public class SearchView extends JPanel implements PropertyChangeListener {
     private final SearchViewModel viewModel;
     private final SearchController controller;

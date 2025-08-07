@@ -57,7 +57,7 @@ public class DBReviewDataAccessObject implements ReviewDataAccessInterface {
                 reader.close();
                 throw new IOException("Failed to save review. HTTP code: " + responseCode + "\n" + sb);
             }
-
+        return true;
         } catch (IOException e) {
             e.printStackTrace();
         }

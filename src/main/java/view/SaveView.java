@@ -14,7 +14,7 @@ import use_case.save.SaveDataAccessInterface;
 import use_case.save.SaveInteractor;
 import use_case.save.SaveInputData;
 import use_case.save.SaveOutputBoundary;
-import view.RecipeCardPanel;
+import view.search.RecipeCardPanel;
 
 import javax.swing.*;
 import java.awt.*;

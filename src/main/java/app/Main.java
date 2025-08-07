@@ -77,8 +77,8 @@ public class Main {
         SearchInteractor searchInteractor = new SearchInteractor(client, searchPresenter);
         SearchController searchController = new SearchController(searchInteractor);
 
-        SearchView searchView = new SearchView(searchViewModel, searchController, new FilterOptions());
-        views.add(searchView, "search");
+        //SearchView searchView = new SearchView(searchViewModel, searchController, new FilterOptions());
+        //views.add(searchView, "search");
 
         viewManagerModel.setState(signupView.getViewName());
         viewManagerModel.firePropertyChanged();
