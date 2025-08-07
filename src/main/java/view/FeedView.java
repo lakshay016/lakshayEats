@@ -4,9 +4,6 @@ import entity.FilterOptions;
 import entity.SearchResult;
 import interface_adapter.search.SearchViewModel;
 import interface_adapter.search.SearchController;
-import interface_adapter.search.SearchPresenter;
-import use_case.search.SearchInteractor;
-import data_access.SpoonacularAPIClient;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +14,7 @@ import java.util.List;
 
 
 //DO NOT DELETE THIS CLASS
-public class SearchView extends JPanel implements PropertyChangeListener {
+public class FeedView extends JPanel implements PropertyChangeListener {
     private final SearchViewModel viewModel;
     private final SearchController controller;
     private final FilterOptions defaultFilters;
@@ -27,7 +24,7 @@ public class SearchView extends JPanel implements PropertyChangeListener {
     private final DefaultListModel<String> listModel = new DefaultListModel<>();
     private final JList<String> resultList = new JList<>(listModel);
 
-    public SearchView(SearchViewModel vm,
+    public FeedView(SearchViewModel vm,
                       SearchController ctl,
                       FilterOptions defaultFilters) {
         this.viewModel      = vm;
@@ -63,7 +60,7 @@ public class SearchView extends JPanel implements PropertyChangeListener {
                     if (idx >= 0) {
                         SearchResult sr = viewModel.getState().getResults().get(idx);
                         new RecipeDetailsView(
-                                (JFrame) SwingUtilities.getWindowAncestor(SearchView.this),
+                                (JFrame) SwingUtilities.getWindowAncestor(FeedView.this),
                                 sr
                         ).setVisible(true);
                     }
