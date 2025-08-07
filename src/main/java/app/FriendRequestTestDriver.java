@@ -15,94 +15,83 @@ import java.util.Set;
 
 public class FriendRequestTestDriver {
     public static void main(String[] args) {
-        // Create dependencies
         CommonUserFactory factory = new CommonUserFactory();
         DBUserDataAccessObject userDataAccess = new DBUserDataAccessObject(factory);
         DBFriendDataAccessObject friendDataAccess = new DBFriendDataAccessObject();
         DBFriendRequestDataAccessObject friendRequestDataAccess = new DBFriendRequestDataAccessObject(userDataAccess);
-
-        // Create test users with friend data
-        System.out.println("🧪 Setting up test users with friend data...");
-
-        // Create users
         User user1 = factory.createUser("user1", "password123");
         User user2 = factory.createUser("user2", "password123");
-        User alice = factory.createUser("alice", "password123");
-        User bob = factory.createUser("bob", "password123");
-
         try {
-            // Save users
             userDataAccess.save(user1);
-            userDataAccess.save(user2);
-            userDataAccess.save(alice);
-            userDataAccess.save(bob);
-
-            // Set up friend data for each user
-            Set<String> emptySet = new HashSet<>();
-
-            // user1: no friends, no requests, no blocked
-            friendDataAccess.save("user1", emptySet, emptySet, emptySet);
-
-            // user2: no friends, no requests, no blocked
-            friendDataAccess.save("user2", emptySet, emptySet, emptySet);
-
-            // alice: no friends, no requests, no blocked
-            friendDataAccess.save("alice", emptySet, emptySet, emptySet);
-
-            // bob: no friends, no requests, no blocked
-            friendDataAccess.save("bob", emptySet, emptySet, emptySet);
-
-            System.out.println("✅ Test users created with friend data!");
-
         } catch (Exception e) {
-            System.out.println("⚠️ Some users may already exist, continuing with tests...");
         }
 
-        // Create a clean console presenter
+        try {
+            userDataAccess.save(user2);
+        } catch (Exception e) {
+        }
+
+        Set<String> emptySet = new HashSet<>();
+        try {
+            friendDataAccess.save("user1", emptySet, emptySet, emptySet);
+            friendDataAccess.save("user2", emptySet, emptySet, emptySet);
+        } catch (Exception e) {
+        }
+
+        FriendRequestController controller = getFriendRequestController(friendRequestDataAccess);
+
+        System.out.println("Testing Friend Request Use Case");
+        System.out.println("==================================");
+
+        System.out.println("Normal friend request");
+        controller.sendFriendRequest("user1", "user2");
+
+        System.out.println("Self-request (should fail due to usage error)");
+        controller.sendFriendRequest("user1", "user1");
+
+        System.out.println("Accept friend request");
+        controller.acceptFriendRequest("user2", "user1");
+
+        System.out.println("Try to send friend request to existing friend (should fail)");
+        controller.sendFriendRequest("user1", "user2");
+
+        System.out.println("Remove friendship");
+        controller.removeFriend("user1", "user2");
+
+        System.out.println("Send new friend request after removal");
+        controller.sendFriendRequest("user1", "user2");
+
+        System.out.println("Deny friend request");
+        controller.denyFriendRequest("user2", "user1");
+
+        System.out.println("Block user");
+        controller.blockUser("user1", "user2");
+
+        System.out.println("Try to send friend request to blocked user (should fail)");
+        controller.sendFriendRequest("user1", "user2");
+
+        System.out.println("Unblock user");
+        controller.unblockUser("user1", "user2");
+
+        System.out.println("Test 11: Try to send friend request after unblock");
+        controller.sendFriendRequest("user1", "user2");
+    }
+
+    private static FriendRequestController getFriendRequestController(DBFriendRequestDataAccessObject friendRequestDataAccess) {
         FriendRequestOutputBoundary presenter = new FriendRequestOutputBoundary() {
             @Override
             public void presentFriendRequestResult(FriendRequestOutputData outputData) {
                 if (outputData.isSuccess()) {
-                    System.out.println("✅ SUCCESS: " + outputData.getMessage());
+                    System.out.println("SUCCESS: " + outputData.getMessage());
                 } else {
-                    System.out.println("❌ ERROR: " + outputData.getMessage());
+                    System.out.println("ERROR: " + outputData.getMessage());
                 }
                 System.out.println("Friend request from '" + outputData.getRequesterUsername() +
                         "' to '" + outputData.getTargetUsername() + "'");
-                System.out.println("─────────────────────────────────────────────");
-            }
-        };
-
-        // Create interactor
+                System.out.println("***********");
+            }};
         FriendRequestInteractor interactor = new FriendRequestInteractor(presenter, friendRequestDataAccess);
-
-        // Create controller
-        FriendRequestController controller = new FriendRequestController(interactor);
-
-        // Test scenarios
-        System.out.println("\n🧪 Testing Friend Request Use Case");
-        System.out.println("==================================");
-
-        // Test 1: Normal friend request
-        System.out.println("\n📝 Test 1: Normal friend request");
-        controller.sendFriendRequest("user1", "user2");
-
-        // Test 2: Self-request (should fail)
-        System.out.println("\n📝 Test 2: Self-request (should fail)");
-        controller.sendFriendRequest("user1", "user1");
-
-        // Test 3: Non-existent user (should fail)
-        System.out.println("\n📝 Test 3: Non-existent user (should fail)");
-        controller.sendFriendRequest("user1", "nonexistentuser");
-
-        // Test 4: Another normal request
-        System.out.println("\n📝 Test 4: Another normal request");
-        controller.sendFriendRequest("alice", "bob");
-
-        // Test 5: Duplicate request (should fail)
-        System.out.println("\n📝 Test 5: Duplicate request (should fail)");
-        controller.sendFriendRequest("user1", "user2");
-
-        System.out.println("\n🏁 Testing complete!");
+        FriendRequestController x = new FriendRequestController(interactor);
+        return x;
     }
 }

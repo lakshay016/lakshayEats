@@ -1,5 +1,6 @@
 package entity;
 import app.LoginTestDriver;
+import data_access.DBRecipeDataAccessObject;
 import data_access.DBUserDataAccessObject;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,11 +76,17 @@ public class CommonUser implements User{
         } else {
             System.out.println("You can only send messages to your friends.");
         }
-
-
     }
 
-    public void sendRecipe(CommonUser receiver, Recipe recipe) {return;
+    public void sendRecipe(CommonUser receiver, Recipe recipe) {
+        if (this.friends.contains(receiver.getUsername())) {
+            DBMessageDataAccessObject messageDb = new DBMessageDataAccessObject();
+            String recipeContent = "RECIPE: " + recipe.name + " (ID: " + recipe.id + ")";
+            messageDb.saveMessage(this.userName, receiver.getUsername(), recipeContent, LocalDateTime.now());
+            System.out.println("Recipe '" + recipe.name + "' sent to " + receiver.getUsername());
+        } else {
+            System.out.println("You can only send recipes to your friends.");
+        }
     }
     public void viewInbox() {
         DBMessageDataAccessObject messageDb = new DBMessageDataAccessObject();
@@ -164,7 +171,7 @@ public class CommonUser implements User{
         this.friends.add(friend.userName);
         friend.friends.add(this.userName);
 
-        // Update the database
+        // Update database
         db.save(userName, friends, requests, blocked);
         db.save(friend.userName, friend.friends, friend.requests, friend.blocked);
 
@@ -198,8 +205,5 @@ public class CommonUser implements User{
     }
 }
 
-        /*
-        CLEAN ARCHITECTURE!!!
-         */
 
 
