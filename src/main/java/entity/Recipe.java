@@ -6,5 +6,7 @@ package entity;
  * imageurl, nutrition, authorId, isPublic (?)
  */
 public class Recipe {
+    public String name;
+    public int id;
 
 }

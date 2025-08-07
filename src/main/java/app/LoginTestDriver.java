@@ -12,7 +12,7 @@ public class LoginTestDriver {
 
         LoginUserDataAccessInterface db = new DBUserDataAccessObject(factory);
 
-        String testUsername = "Dylan";
+        String testUsername = "lakshay";
         User user = db.get(testUsername);
 
         if (user == null) {
