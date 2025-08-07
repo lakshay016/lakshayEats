@@ -148,9 +148,7 @@ public class SearchFrame extends JFrame {
         filters.setExcludeIngredients(ingredientPanel.getExcludeIngredients());
         controller.handleSearch(query, filters);
 
-        filters.setIncludeIngredients(ingredientPanel.getIncludeIngredients());
-        filters.setExcludeIngredients(ingredientPanel.getExcludeIngredients());
-        controller.handleSearch(query, filters);
+
     }
 
 

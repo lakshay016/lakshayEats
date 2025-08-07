@@ -83,7 +83,8 @@ public class RecipeCardPanel extends JPanel {
                     public void windowClosing(java.awt.event.WindowEvent e) {
                         SwingUtilities.getWindowAncestor(RecipeCardPanel.this).setVisible(true);
                     }
-                });            }
+                });
+            }
         });
     }
 

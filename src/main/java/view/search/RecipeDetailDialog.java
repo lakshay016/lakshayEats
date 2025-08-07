@@ -22,8 +22,8 @@ public class RecipeDetailDialog extends JDialog {
     private final String username;
     private final SearchResult result;
 
-    
-    
+
+
     public RecipeDetailDialog(Window parent, SearchResult result, SaveController saveController, String username) {
         super(parent, "Recipe Details", ModalityType.APPLICATION_MODAL);
         this.result = result;
@@ -34,7 +34,15 @@ public class RecipeDetailDialog extends JDialog {
         // Top panel: back button and title
         JPanel topPanel = new JPanel(new BorderLayout(5,5));
         JButton backButton = new JButton("← Back");
-        backButton.addActionListener(e -> dispose());
+        backButton.addActionListener(e -> {
+            // Get the owner window (SearchFrame) and show it
+            Window owner = getOwner();
+            if (owner != null) {
+                owner.setVisible(true);
+            }
+            // Hide this dialog
+            setVisible(false);
+        });
         JLabel titleLabel = new JLabel(result.getTitle(), SwingConstants.CENTER);
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 18f));
         topPanel.add(backButton, BorderLayout.WEST);
@@ -111,7 +119,6 @@ public class RecipeDetailDialog extends JDialog {
         bottomPanel.add(viewReviewsButton);
         bottomPanel.add(createReviewButton);
         getContentPane().add(bottomPanel, BorderLayout.SOUTH);
-        getContentPane().add(bottomPanel, BorderLayout.SOUTH);
         setVisible(true);
     }
 
@@ -175,7 +182,15 @@ public class RecipeDetailDialog extends JDialog {
         // Top panel: back button and title
         JPanel topPanel = new JPanel(new BorderLayout(5,5));
         JButton backButton = new JButton("← Back");
-        backButton.addActionListener(e -> dispose());
+        backButton.addActionListener(e -> {
+            // Get the owner window (SearchFrame) and show it
+            Window owner = getOwner();
+            if (owner != null) {
+                owner.setVisible(true);
+            }
+            // Hide this dialog
+            setVisible(false);
+        });
         JLabel titleLabel = new JLabel(result.getTitle(), SwingConstants.CENTER);
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 18f));
         topPanel.add(backButton, BorderLayout.WEST);
