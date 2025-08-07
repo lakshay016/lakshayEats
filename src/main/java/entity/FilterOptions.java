@@ -16,7 +16,7 @@ public class FilterOptions {
     private List<String> cuisines;
     private List<String> excludeCuisines;
 
-    // 2) Dietary restrictionsa
+    // 2) Dietary restrictions
     private List<String> diets;
     // [Gluten Free, Ketogenic, Vegetarian, Lacto-Vegetarian, Ovo-vegetarian, Vegan, Pescetarian,
     // Paleo, Primal, Low FODMAP, Whole30]
@@ -147,7 +147,7 @@ public class FilterOptions {
     public Integer getNumber() { return number; }
     public void setNumber(Integer number) { this.number = number; }
 
-     public static class Builder {
+    public static class Builder {
         private FilterOptions opts = new FilterOptions();
 
         public Builder withCuisines(List<String> cuisines) {

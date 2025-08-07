@@ -1,8 +1,5 @@
 package interface_adapter.login;
 
-/**
- code is from homework 5
- */
 
 public class LoginState {
     private String username = "";
