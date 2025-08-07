@@ -1,15 +1,11 @@
 package use_case.friendRequest;
-
-/**
- * Input boundary for friend request use case.
- * Defines the contract for sending friend requests.
- */
 public interface FriendRequestInputBoundary {
-
-    /**
-     * Sends a friend request from one user to another.
-     *
-     * @param inputData Contains the requester and target user information
-     */
     void sendFriendRequest(FriendRequestInputData inputData);
+    void acceptFriendRequest(FriendRequestInputData inputData);
+    void denyFriendRequest(FriendRequestInputData inputData);
+    void removeFriend(FriendRequestInputData inputData);
+    void blockUser(FriendRequestInputData inputData);
+    void unblockUser(FriendRequestInputData inputData);
+    void sendMessage(FriendRequestInputData inputData);
+    void sendRecipe(FriendRequestInputData inputData);
 }
