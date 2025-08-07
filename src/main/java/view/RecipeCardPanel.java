@@ -1,4 +1,4 @@
-package view.search;
+package view;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -9,23 +9,27 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 import entity.SearchResult;
+import interface_adapter.save.SaveController;
+import view.LoggedInView;
+import view.RecipeDetailDialog;
 
 public class RecipeCardPanel extends JPanel {
+    private static final Logger LOGGER = Logger.getLogger(RecipeCardPanel.class.getName());
     private final SearchResult result;
     private final JLabel imageLabel;
+    private final SaveController saveController;
 
-    public RecipeCardPanel(SearchResult result) {
+    public RecipeCardPanel(SearchResult result, SaveController saveController, String username) {
         this.result = result;
+        this.saveController = saveController;
         setLayout(new BorderLayout(8, 8));
         setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
-        // Image placeholder, replaced asynchronously
         imageLabel = new JLabel();
         imageLabel.setPreferredSize(new Dimension(100, 100));
         add(imageLabel, BorderLayout.WEST);
         loadImageAsync();
 
-        // Info panel
         JPanel infoPanel = new JPanel(new GridLayout(0, 1));
         JLabel titleLabel = new JLabel(result.getTitle());
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
@@ -33,22 +37,17 @@ public class RecipeCardPanel extends JPanel {
         infoPanel.add(new JLabel("Ready in: " + result.getReadyInMinutes() + " mins"));
         add(infoPanel, BorderLayout.CENTER);
 
-        // Click listener to open detail view
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 RecipeDetailDialog detail = new RecipeDetailDialog(
                         SwingUtilities.getWindowAncestor(RecipeCardPanel.this),
-                        result);
+                        result, saveController, username);
                 detail.setVisible(true);
             }
         });
     }
 
-    /**
-     * Loads the recipe image on a background thread,
-     * then sets it on the imageLabel when done.
-     */
     private void loadImageAsync() {
         new SwingWorker<ImageIcon, Void>() {
             @Override
@@ -66,9 +65,7 @@ public class RecipeCardPanel extends JPanel {
                 try {
                     imageLabel.setIcon(get());
                 } catch (Exception e) {
-                    Logger LOGGER = null;
                     LOGGER.warning("Failed to load recipe image: " + e.getMessage());
-                    // Keep placeholder if loading fails
                 }
             }
         }.execute();

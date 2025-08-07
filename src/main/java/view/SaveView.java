@@ -14,7 +14,7 @@ import use_case.save.SaveDataAccessInterface;
 import use_case.save.SaveInteractor;
 import use_case.save.SaveInputData;
 import use_case.save.SaveOutputBoundary;
-import view.search.RecipeCardPanel;
+import view.RecipeCardPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -135,8 +135,6 @@ public class SaveView extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            String userId = "demo_user";
-
             SaveDataAccessInterface dataAccess = new DBRecipeDataAccessObject();
 
             SaveViewModel viewModel = new SaveViewModel();

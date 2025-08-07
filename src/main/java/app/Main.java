@@ -23,7 +23,7 @@ import view.LoggedInView;
 import view.LoginView;
 import view.SignupView;
 import view.ViewManager;
-import view.search.SearchView;
+import view.SearchView;
 
 
 public class Main {

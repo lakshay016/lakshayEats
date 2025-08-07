@@ -18,12 +18,12 @@ import use_case.save.SaveOutputBoundary;
 import view.SaveView;
 import view.search.FilterDialog;
 import view.search.IngredientPanel;
-import view.search.RecipeCardPanel;
 import interface_adapter.search.SearchController;
 import interface_adapter.search.SearchViewModel;
 import interface_adapter.search.SearchPresenter;
 import use_case.search.SearchInteractor;
 import data_access.SpoonacularAPIClient;
+import view.RecipeCardPanel;
 
 public class SearchFrame extends JFrame {
     private final SearchViewModel viewModel;
@@ -147,6 +147,10 @@ public class SearchFrame extends JFrame {
         filters.setIncludeIngredients(ingredientPanel.getIncludeIngredients());
         filters.setExcludeIngredients(ingredientPanel.getExcludeIngredients());
         controller.handleSearch(query, filters);
+
+        filters.setIncludeIngredients(ingredientPanel.getIncludeIngredients());
+        filters.setExcludeIngredients(ingredientPanel.getExcludeIngredients());
+        controller.handleSearch(query, filters);
     }
 
 
@@ -155,6 +159,7 @@ public class SearchFrame extends JFrame {
      */
     public void displayResults(List<SearchResult> results) {
         resultsPanel.removeAll();
+
 
         if (results.isEmpty()) {
             JLabel noResults = new JLabel("No recipes found.", SwingConstants.CENTER);

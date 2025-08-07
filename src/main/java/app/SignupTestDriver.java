@@ -21,6 +21,6 @@ public class SignupTestDriver {
         String testUsername = "d";
         String testPassword = "12345";
 
-        controller.signup(testUsername, testPassword);
+        controller.signup(testUsername, testPassword, testPassword);
     }
 }
