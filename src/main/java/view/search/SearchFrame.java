@@ -130,7 +130,7 @@ public class SearchFrame extends JFrame {
     }
 
     private void openFilterDialog() {
-        FilterDialog dialog = new FilterDialog(this);
+        FilterDialog dialog = new FilterDialog(this, userId, null); // passing null DAO for now
         dialog.setModal(true);
         dialog.setVisible(true);
         FilterOptions opts = dialog.getFilterOptions();
@@ -138,6 +138,7 @@ public class SearchFrame extends JFrame {
             currentFilters = opts;
         }
     }
+
 
     private void performSearch() {
 

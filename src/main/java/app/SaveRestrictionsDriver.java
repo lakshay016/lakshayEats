@@ -15,7 +15,7 @@ public class SaveRestrictionsDriver {
         JSONObject intolerances = new JSONObject();
         intolerances.put("Dairy", 1);
 
-        db.saveRestrictionsAndIntolerances(username, restrictions, intolerances);
+        db.savePreferencesToDB(username, restrictions, intolerances);
         System.out.println("✅ Restrictions and intolerances saved for: " + username);
     }
 }
