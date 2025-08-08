@@ -32,6 +32,7 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
 
     @Override
     public void savePreferences(String username, Preferences preferences) {
+
         JSONObject restrictionsJson = new JSONObject();
         for (Map.Entry<String, Integer> entry : preferences.getDiets().entrySet()) {
             restrictionsJson.put(entry.getKey(), entry.getValue());
@@ -42,11 +43,11 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
             intolerancesJson.put(entry.getKey(), entry.getValue());
         }
 
-        savePreferencesToDB(username, restrictionsJson, intolerancesJson);
+        saveRestrictionsAndIntolerances(username, restrictionsJson, intolerancesJson);
     }
 
 
-    public void savePreferencesToDB(String username, JSONObject restrictions, JSONObject intolerances) {
+    public void saveRestrictionsAndIntolerances(String username, JSONObject restrictions, JSONObject intolerances) {
         try {
             String urlStr = supabaseUrl + "/rest/v1/" + tableName;
             URL url = new URL(urlStr);
@@ -109,9 +110,9 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
         try {
             String urlStr = supabaseUrl + "/rest/v1/" + tableName + "?username=eq." + username + "&select=*";
             URL url = new URL(urlStr);
-            System.out.println("Fetching for username: " + username);
-            System.out.println("Request URL: " + urlStr);
-            System.out.println("API key: " + apiKey);
+//            System.out.println("Fetching for username: " + username);
+//            System.out.println("Request URL: " + urlStr);
+//            System.out.println("API key: " + apiKey);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("GET");
@@ -135,7 +136,7 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
             }
             reader.close();
 
-            System.out.println("Raw Supabase response: " + sb);
+//            System.out.println("Raw Supabase response: " + sb);
 
             return new org.json.JSONArray(sb.toString()).getJSONObject(0);
         } catch (Exception e) {

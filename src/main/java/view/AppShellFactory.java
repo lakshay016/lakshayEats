@@ -69,7 +69,17 @@ public final class AppShellFactory {
                 new SpoonacularAPIClient(apiKey));
         var feedPage    = new FeedPage();
         var friendsPage = new FriendsPage();
-        var accountPage = new AccountPage(prefController, prefVm);
+
+        // in AppShellFactory.create(...)
+        var accountPage = new AccountPage(prefController, prefVm, () -> {
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Change password flow coming soon.",
+                    "Security",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        });
+        accountPage.loadPreferencesForUser(currentUsername);
 
         // Load preferences immediately for the user
         accountPage.loadPreferencesForUser(currentUsername);

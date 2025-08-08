@@ -10,12 +10,12 @@ public class SaveRestrictionsDriver {
         String username = "mia";
 
         JSONObject restrictions = new JSONObject();
-        restrictions.put("Vegertarian", 1);
+        restrictions.put("Vegetarian", 1);
 
         JSONObject intolerances = new JSONObject();
         intolerances.put("Dairy", 1);
 
-        db.savePreferencesToDB(username, restrictions, intolerances);
+        db.saveRestrictionsAndIntolerances(username, restrictions, intolerances);
         System.out.println("✅ Restrictions and intolerances saved for: " + username);
     }
 }
