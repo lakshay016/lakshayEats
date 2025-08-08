@@ -1,0 +1,25 @@
+package use_case.preferences.save_preferences;
+
+import entity.Preferences;
+import use_case.preferences.PreferencesDataAccessInterface;
+
+public class SavePreferencesInteractor implements SavePreferencesInputBoundary {
+    private final PreferencesDataAccessInterface preferencesDAO;
+    private final SavePreferencesOutputBoundary presenter;
+
+    public SavePreferencesInteractor(PreferencesDataAccessInterface preferencesDAO,
+                                     SavePreferencesOutputBoundary presenter) {
+        this.preferencesDAO = preferencesDAO;
+        this.presenter = presenter;
+    }
+
+    @Override
+    public void execute(String username, Preferences preferences) {
+        try {
+            preferencesDAO.savePreferences(username, preferences);
+            presenter.prepareSuccessView("Preferences saved successfully!");
+        } catch (Exception e) {
+            presenter.prepareFailView("Failed to save preferences: " + e.getMessage());
+        }
+    }
+}

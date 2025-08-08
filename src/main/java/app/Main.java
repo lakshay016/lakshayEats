@@ -2,9 +2,7 @@ package app;
 
 import java.awt.CardLayout;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 
 import data_access.DBUserDataAccessObject;
 import data_access.SpoonacularAPIClient;
@@ -61,7 +59,29 @@ public class Main {
         views.add(loginView, loginView.getViewName());
 
         final LoggedInView loggedInView = ChangePasswordUseCaseFactory.create(viewManagerModel,
-                loggedInViewModel, userDataAccessObject, userDataAccessObject);;
+                loggedInViewModel, userDataAccessObject, userDataAccessObject);
+
+        // When we land on LoggedInView, immediately build the App Shell and switch to it.
+        viewManagerModel.addPropertyChangeListener(evt -> {
+            if ("state".equals(evt.getPropertyName())
+                    && loggedInView.getViewName().equals(evt.getNewValue())) {
+
+                String currentUsername = loggedInViewModel.getState().getUsername();
+
+                // Build the shell using your factory
+                JPanel shell = view.AppShellFactory.create(currentUsername);
+
+                // Register it with the same CardLayout container
+                views.add(shell, "app");
+
+                // Switch to it on the next tick so CardLayout registers the new card
+                SwingUtilities.invokeLater(() -> {
+                    viewManagerModel.setState("app");
+                    viewManagerModel.firePropertyChanged();
+                });
+            }
+        });
+
 
         views.add(loggedInView, loggedInView.getViewName());
 

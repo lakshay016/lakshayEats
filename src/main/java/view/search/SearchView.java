@@ -6,17 +6,20 @@ import java.util.List;
 
 import entity.FilterOptions;
 import entity.SearchResult;
+import interface_adapter.save.SaveController;
 import interface_adapter.search.SearchController;
 import interface_adapter.search.SearchViewModel;
 import interface_adapter.search.SearchPresenter;
+import use_case.preferences.PreferencesDataAccessInterface;
 import use_case.search.SearchInteractor;
 import data_access.SpoonacularAPIClient;
 
-public class SearchView extends JFrame {
+public class SearchView extends JPanel {
     private final SearchViewModel viewModel;
     private final SearchController controller;
     private FilterOptions currentFilters;
     private final IngredientPanel ingredientPanel;
+    private final SaveController saveController;
 
     private FilterDialog filterDialog;
 
@@ -24,11 +27,20 @@ public class SearchView extends JFrame {
     private final JButton filtersButton;
     private final JButton searchButton;
     private final JPanel resultsPanel;
+    private final String currentUsername;
+    private final PreferencesDataAccessInterface prefDao;
 
-    public SearchView() {
+    public SearchView(String currentUsername,
+                      SaveController saveController,
+                      PreferencesDataAccessInterface prefDao) {
+        this.currentUsername = currentUsername;
+        this.saveController = saveController;
+        this.prefDao = prefDao;
+
         // Load API key
         String apiKey = System.getenv("SPOONACULAR_API_KEY");
         if (apiKey == null) {
+            // 'this' is fine for a JPanel parent in JOptionPane
             JOptionPane.showMessageDialog(this,
                     "Please set SPOONACULAR_API_KEY in your environment.",
                     "Missing API Key", JOptionPane.ERROR_MESSAGE);
@@ -45,16 +57,14 @@ public class SearchView extends JFrame {
             }
         });
 
-        // Build Clean Architecture components
+        // Build Clean Architecture components (kept as-is)
         SearchPresenter presenter = new SearchPresenter(viewModel);
         SearchInteractor interactor = new SearchInteractor(client, presenter);
         controller = new SearchController(interactor);
 
-        // Initialize UI components
-        setTitle("Recipe Search");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setLocationRelativeTo(null);
+        // ==== UI ====
+        setLayout(new BorderLayout(10, 10));                // CHANGED: use panel's layout
+        setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12)); // small padding
 
         // Top bar: search field + filters button
         JPanel topBar = new JPanel(new BorderLayout(5, 5));
@@ -65,14 +75,16 @@ public class SearchView extends JFrame {
 
         // Ingredients label and panel
         JLabel ingredientsLabel = new JLabel("Ingredients");
-        // wrap label to add left padding
         JPanel labelHolder = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        labelHolder.setOpaque(false);
         labelHolder.add(ingredientsLabel);
+
         ingredientPanel = new IngredientPanel();
         ingredientPanel.setVisible(true);
 
         // North panel combining top bar and ingredients
         JPanel northPanel = new JPanel(new BorderLayout(5, 5));
+        northPanel.setOpaque(false);
         northPanel.add(topBar, BorderLayout.NORTH);
         northPanel.add(labelHolder, BorderLayout.WEST);
         northPanel.add(ingredientPanel, BorderLayout.CENTER);
@@ -81,45 +93,44 @@ public class SearchView extends JFrame {
         resultsPanel = new JPanel();
         resultsPanel.setLayout(new BoxLayout(resultsPanel, BoxLayout.Y_AXIS));
         JScrollPane resultsScroll = new JScrollPane(resultsPanel);
+        resultsScroll.setBorder(BorderFactory.createEmptyBorder());
 
         // Search button at bottom
         searchButton = new JButton("Search");
 
-        // Layout main frame
-        Container cp = getContentPane();
-        cp.setLayout(new BorderLayout(10, 10));
-        cp.add(northPanel, BorderLayout.NORTH);
-        cp.add(resultsScroll, BorderLayout.CENTER);
-        cp.add(searchButton, BorderLayout.SOUTH);
+        // Add to this panel (instead of getContentPane)
+        add(northPanel, BorderLayout.NORTH);
+        add(resultsScroll, BorderLayout.CENTER);
+        add(searchButton, BorderLayout.SOUTH);
 
         // Attach event handlers
         filtersButton.addActionListener(e -> openFilterDialog());
         searchButton.addActionListener(e -> performSearch());
-
-        // Show frame
-        setVisible(true);
     }
 
     private void openFilterDialog() {
-        FilterDialog dialog = new FilterDialog(this);
+        java.awt.Window win = SwingUtilities.getWindowAncestor(this);
+        JFrame owner = (win instanceof JFrame) ? (JFrame) win : null;
+
+        FilterDialog dialog = new FilterDialog(owner, currentUsername, prefDao);
         dialog.setModal(true);
+        dialog.setLocationRelativeTo(owner);
         dialog.setVisible(true);
+
         FilterOptions opts = dialog.getFilterOptions();
         if (opts != null) {
             currentFilters = opts;
         }
     }
 
-    private void performSearch() {
 
-        // build search
+    private void performSearch() {
         String query = searchField.getText();
         FilterOptions filters = (currentFilters != null) ? currentFilters : new FilterOptions();
         filters.setIncludeIngredients(ingredientPanel.getIncludeIngredients());
         filters.setExcludeIngredients(ingredientPanel.getExcludeIngredients());
         controller.handleSearch(query, filters);
     }
-
 
     /**
      * Called by presenter via ViewModel when new results are available.
@@ -128,24 +139,25 @@ public class SearchView extends JFrame {
         resultsPanel.removeAll();
 
         if (results.isEmpty()) {
-            JLabel noResults = new JLabel("No recipes found.", SwingConstants.CENTER);
+            JLabel noResults = new JLabel("No recipes found.", SwingConstants.LEFT);
             noResults.setForeground(Color.GRAY);
+            noResults.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
             resultsPanel.add(noResults);
         } else {
             for (SearchResult r : results) {
-                RecipeCardPanel card = new RecipeCardPanel(r);
-                // constrain height
+                // ⚠️ use the save-enabled constructor so detail dialog shows Save/Reviews
+                RecipeCardPanel card = (saveController != null && currentUsername != null)
+                        ? new RecipeCardPanel(r, saveController, currentUsername)
+                        : new RecipeCardPanel(r);
+
                 card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
                 card.setPreferredSize(new Dimension(600, 120));
                 resultsPanel.add(card);
+                resultsPanel.add(Box.createVerticalStrut(8));
             }
         }
 
         resultsPanel.revalidate();
         resultsPanel.repaint();
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(SearchView::new);
     }
 }

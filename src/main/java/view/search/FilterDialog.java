@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 
 import entity.FilterOptions;
+import entity.Preferences;
+import use_case.preferences.PreferencesDataAccessInterface;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,14 +51,21 @@ public class FilterDialog extends JDialog {
     private JComboBox<String> sortCombo;
     private JComboBox<String> sortDirCombo;
 
-    public FilterDialog(JFrame parent) {
+    private final PreferencesDataAccessInterface preferencesDAO;
+    private final String username;
+
+    public FilterDialog(JFrame parent, String username, PreferencesDataAccessInterface preferencesDAO) {
         super(parent, "Filter Options", true);
+        this.username = username;
+        this.preferencesDAO = preferencesDAO;
+
         setSize(600, 500);
         setLocationRelativeTo(parent);
 
         initializeComponents();
         loadUserPreferences();
     }
+
 
     private void initializeComponents() {
         JTabbedPane tabs = new JTabbedPane();
@@ -146,82 +156,32 @@ public class FilterDialog extends JDialog {
 
     private void loadUserPreferences() {
         try {
-            // TODO: Replace with actual logged-in user detection
-            // String username = loggedInViewModel.getState().getUsername();
-            String username = "testuser"; // Placeholder for testing
+            Preferences prefs = preferencesDAO.getPreferences(username);
 
-            // TODO: Uncomment when database is ready
-            /*
-            DBUserPreferenceDataAccessObject db = new DBUserPreferenceDataAccessObject();
-            JSONObject data = db.fetchRestrictionsAndIntolerances(username);
-
-            if (data != null) {
-                JSONObject restrictions = data.getJSONObject("preferences");
-                JSONObject intolerances = data.getJSONObject("intolerances");
-
-                // Load dietary restrictions (diets)
-                if (restrictions != null) {
-                    for (String diet : DIETS) {
-                        if (restrictions.has(diet.toLowerCase().replace(" ", "_")) &&
-                            restrictions.getBoolean(diet.toLowerCase().replace(" ", "_"))) {
-                            JCheckBox checkbox = dietCheckboxes.get(diet);
-                            if (checkbox != null) {
-                                checkbox.setSelected(true);
-                            }
-                        }
+            if (prefs != null) {
+                // Diets
+                Map<String, Integer> diets = prefs.getDiets();
+                for (String diet : DIETS) {
+                    if (diets.getOrDefault(diet, 0) == 1) {
+                        JCheckBox cb = dietCheckboxes.get(diet);
+                        if (cb != null) cb.setSelected(true);
                     }
                 }
 
-                // Load intolerances
-                if (intolerances != null) {
-                    for (String intolerance : INTOLERANCES) {
-                        if (intolerances.has(intolerance.toLowerCase().replace(" ", "_")) &&
-                            intolerances.getBoolean(intolerance.toLowerCase().replace(" ", "_"))) {
-                            JCheckBox checkbox = intoleranceCheckboxes.get(intolerance);
-                            if (checkbox != null) {
-                                checkbox.setSelected(true);
-                            }
-                        }
+                // Intolerances
+                Map<String, Integer> intolerances = prefs.getIntolerances();
+                for (String intolerance : INTOLERANCES) {
+                    if (intolerances.getOrDefault(intolerance, 0) == 1) {
+                        JCheckBox cb = intoleranceCheckboxes.get(intolerance);
+                        if (cb != null) cb.setSelected(true);
                     }
                 }
             }
-            */
-
-            // TEST DATA - Remove this when database is connected
-            loadTestPreferences();
 
         } catch (Exception e) {
-            System.err.println("Error loading user preferences: " + e.getMessage());
+            System.err.println("Error loading preferences for " + username + ": " + e.getMessage());
             e.printStackTrace();
-            // Continue without preferences if there's an error
         }
-    }
-
-    // TEST METHOD - Remove when database is connected
-    private void loadTestPreferences() {
-        // Test dietary preferences
-        JCheckBox vegetarianBox = dietCheckboxes.get("Vegetarian");
-        if (vegetarianBox != null) {
-            vegetarianBox.setSelected(true);
-        }
-
-        JCheckBox glutenFreeBox = dietCheckboxes.get("Gluten Free");
-        if (glutenFreeBox != null) {
-            glutenFreeBox.setSelected(true);
-        }
-
-        // Test intolerances
-        JCheckBox dairyBox = intoleranceCheckboxes.get("Dairy");
-        if (dairyBox != null) {
-            dairyBox.setSelected(true);
-        }
-
-        JCheckBox nutBox = intoleranceCheckboxes.get("Tree Nut");
-        if (nutBox != null) {
-            nutBox.setSelected(true);
-        }
-
-        System.out.println("Test preferences loaded: Vegetarian, Gluten Free, Dairy intolerance, Tree Nut intolerance");
     }
 
     private void resetFilters() {

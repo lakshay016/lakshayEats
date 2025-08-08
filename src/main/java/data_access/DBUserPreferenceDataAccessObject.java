@@ -1,18 +1,52 @@
 package data_access;
 
+import entity.Preferences;
 import org.json.JSONObject;
+import use_case.preferences.PreferencesDataAccessInterface;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
-public class DBUserPreferenceDataAccessObject {
+public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessInterface {
+    // Keep these constants in the DAO
+    private static final String[] DIETS = {
+            "Gluten Free", "Ketogenic", "Vegetarian", "Lacto-Vegetarian",
+            "Ovo-vegetarian", "Vegan", "Pescetarian", "Paleo", "Primal",
+            "Low FODMAP", "Whole30"
+    };
+    private static final String[] INTOLERANCES = {
+            "Dairy", "Egg", "Gluten", "Grain", "Peanut",
+            "Seafood", "Sesame", "Shellfish", "Soy", "Sulfite",
+            "Tree Nut", "Wheat"
+    };
+
+
     private final String supabaseUrl = "https://heaxbbjincrnnimobhdc.supabase.co";
     private final String apiKey = System.getenv("SUPABASE_API_KEY");
     private final String tableName = "user_preferences";
 
-    public void saveRestrictionsAndIntolerances(String username, JSONObject restrictions, JSONObject intolerances) {
+
+    @Override
+    public void savePreferences(String username, Preferences preferences) {
+        JSONObject restrictionsJson = new JSONObject();
+        for (Map.Entry<String, Integer> entry : preferences.getDiets().entrySet()) {
+            restrictionsJson.put(entry.getKey(), entry.getValue());
+        }
+
+        JSONObject intolerancesJson = new JSONObject();
+        for (Map.Entry<String, Integer> entry : preferences.getIntolerances().entrySet()) {
+            intolerancesJson.put(entry.getKey(), entry.getValue());
+        }
+
+        savePreferencesToDB(username, restrictionsJson, intolerancesJson);
+    }
+
+
+    public void savePreferencesToDB(String username, JSONObject restrictions, JSONObject intolerances) {
         try {
             String urlStr = supabaseUrl + "/rest/v1/" + tableName;
             URL url = new URL(urlStr);
@@ -44,6 +78,32 @@ public class DBUserPreferenceDataAccessObject {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public Preferences getPreferences(String username) {
+        JSONObject combined = fetchRestrictionsAndIntolerances(username);
+        if (combined == null) {
+            return new Preferences(new HashMap<>(), new HashMap<>());
+        }
+
+        Map<String, Integer> dietsMap = new HashMap<>();
+        Map<String, Integer> intolerancesMap = new HashMap<>();
+
+        // Fill diets map
+        for (String diet : DIETS) {
+            int value = combined.optInt(diet, 0);
+            dietsMap.put(diet, value);
+        }
+
+        // Fill intolerances map
+        for (String intolerance : INTOLERANCES) {
+            int value = combined.optInt(intolerance, 0);
+            intolerancesMap.put(intolerance, value);
+        }
+
+        return new Preferences(dietsMap, intolerancesMap);
+    }
+
 
     public JSONObject fetchRestrictionsAndIntolerances(String username) {
         try {
