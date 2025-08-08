@@ -16,6 +16,9 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
         LoginUserDataAccessInterface, ChangePasswordUserDataAccessInterface {
@@ -31,7 +34,6 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
     private final String apiKey = System.getenv("SUPABASE_API_KEY");
     private final String tableName = "users";
     private String currentUsername = null;
-
     public DBUserDataAccessObject(UserFactory factory) {
         this.factory = factory;
     }
@@ -43,6 +45,43 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
         } catch (IOException e) {
             return false;
         }
+    }
+
+    public List<String> getAllUsers() {
+        List<String> users = new ArrayList<>();
+        try {
+            String urlStr = supabaseUrl + "/rest/v1/" + tableName + "?select=username";
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", apiKey);
+            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+            conn.setRequestProperty("Accept", "application/json");
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != 200) return users;
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+
+            JSONArray array = new JSONArray(sb.toString());
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject user = array.getJSONObject(i);
+                String username = user.getString("username");
+                if (!username.equals(currentUsername)) { // Don't show current user
+                    users.add(username);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 
     @Override

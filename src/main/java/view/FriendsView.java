@@ -15,6 +15,7 @@ public class FriendsView extends JPanel {
         public final String name;
         public boolean following;
 
+
         public FriendItem(String id, String name, boolean following) {
             this.id = id;
             this.name = name;
@@ -22,10 +23,14 @@ public class FriendsView extends JPanel {
         }
     }
 
-    private Consumer<String> followHandler = id -> {};
-    private Consumer<String> unfollowHandler = id -> {};
-    private Consumer<String> loadMessagesHandler = id -> {};
-    private BiConsumer<String, String> sendMessageHandler = (id, text) -> {};
+    private Consumer<String> followHandler = id -> {
+    };
+    private Consumer<String> unfollowHandler = id -> {
+    };
+    private Consumer<String> loadMessagesHandler = id -> {
+    };
+    private BiConsumer<String, String> sendMessageHandler = (id, text) -> {
+    };
 
     // UI
     private final JPanel friendsListPanel = new JPanel();
@@ -63,6 +68,21 @@ public class FriendsView extends JPanel {
         split.setResizeWeight(0.3);
         add(split, BorderLayout.CENTER);
 
+        JPanel addFriendPanel = new JPanel(new BorderLayout(6, 6));
+        addFriendPanel.setBorder(BorderFactory.createTitledBorder("Add Friend"));
+
+        JTextField usernameField = new JTextField(15);
+        JButton addButton = new JButton("Send Request");
+
+        addFriendPanel.add(usernameField, BorderLayout.CENTER);
+        addFriendPanel.add(addButton, BorderLayout.EAST);
+
+// Add the panel to the top of the main panel
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(addFriendPanel, BorderLayout.NORTH);
+        topPanel.add(split, BorderLayout.CENTER);
+        add(topPanel, BorderLayout.CENTER);
+
         // Send logic
         sendButton.addActionListener(e -> {
             String txt = inputField.getText().trim();
@@ -73,10 +93,25 @@ public class FriendsView extends JPanel {
         });
     }
 
-    public void onFollow(Consumer<String> handler) { this.followHandler = handler != null ? handler : id -> {}; }
-    public void onUnfollow(Consumer<String> handler) { this.unfollowHandler = handler != null ? handler : id -> {}; }
-    public void onLoadMessages(Consumer<String> handler) { this.loadMessagesHandler = handler != null ? handler : id -> {}; }
-    public void onSendMessage(BiConsumer<String, String> handler) { this.sendMessageHandler = handler != null ? handler : (id, txt) -> {}; }
+    public void onFollow(Consumer<String> handler) {
+        this.followHandler = handler != null ? handler : id -> {
+        };
+    }
+
+    public void onUnfollow(Consumer<String> handler) {
+        this.unfollowHandler = handler != null ? handler : id -> {
+        };
+    }
+
+    public void onLoadMessages(Consumer<String> handler) {
+        this.loadMessagesHandler = handler != null ? handler : id -> {
+        };
+    }
+
+    public void onSendMessage(BiConsumer<String, String> handler) {
+        this.sendMessageHandler = handler != null ? handler : (id, txt) -> {
+        };
+    }
 
     // Populate/refresh friends list
     public void setFriends(List<FriendItem> items) {
@@ -97,7 +132,7 @@ public class FriendsView extends JPanel {
         for (FriendItem f : friends) {
             JPanel row = new JPanel(new BorderLayout(6, 6));
             row.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230,230,230)),
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
                     BorderFactory.createEmptyBorder(8, 8, 8, 8)
             ));
 
@@ -122,7 +157,8 @@ public class FriendsView extends JPanel {
             // Select friend to load messages
             row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             row.addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override public void mouseClicked(java.awt.event.MouseEvent e) {
+                @Override
+                public void mouseClicked(java.awt.event.MouseEvent e) {
                     selectedFriendId = f.id;
                     messagesModel.clear();
                     loadMessagesHandler.accept(f.id);
@@ -135,38 +171,5 @@ public class FriendsView extends JPanel {
         friendsListPanel.add(Box.createVerticalGlue());
         friendsListPanel.revalidate();
         friendsListPanel.repaint();
-    }
-
-    // Quick demo launcher
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame f = new JFrame("Friends");
-            FriendsView v = new FriendsView();
-
-            // Demo wiring
-            v.setFriends(List.of(
-                    new FriendItem("u1", "Emily", true),
-                    new FriendItem("u2", "Jim", false),
-                    new FriendItem("u3", "Tim", true)
-            ));
-
-            v.onFollow(id -> System.out.println("Follow " + id));
-            v.onUnfollow(id -> System.out.println("Unfollow " + id));
-            v.onLoadMessages(id -> {
-                // Simulate async load -> here immediately
-                v.setMessages(List.of(
-                        "Them: h!",
-                        "You: Hello!",
-                        "Them: wats up?"
-                ));
-            });
-            v.onSendMessage((id, txt) -> System.out.println("Send to " + id + ": " + txt));
-
-            f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            f.setContentPane(v);
-            f.setSize(900, 600);
-            f.setLocationRelativeTo(null);
-            f.setVisible(true);
-        });
     }
 }
