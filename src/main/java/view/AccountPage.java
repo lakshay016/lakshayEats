@@ -14,11 +14,10 @@ import java.util.Map;
 public class AccountPage extends JPanel implements PropertyChangeListener {
     private final PreferencesController controller;
     private final PreferencesViewModel viewModel;
-    private final Runnable onChangePassword; // new
+    private final Runnable onChangePassword;
     private final JCheckBox[] dietBoxes;
     private final JCheckBox[] intoleranceBoxes;
 
-    // Keep these in sync with DB/FilterDialog
     private static final String[] DIETS = {
             "Gluten Free", "Ketogenic", "Vegetarian", "Lacto-Vegetarian",
             "Ovo-vegetarian", "Vegan", "Pescetarian", "Paleo", "Primal",
@@ -32,14 +31,13 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
 
     public AccountPage(PreferencesController controller,
                        PreferencesViewModel viewModel,
-                       Runnable onChangePassword
-                       ) { // new ctor param
+                       Runnable onChangePassword) {
         this.controller = controller;
         this.viewModel = viewModel;
         this.onChangePassword = onChangePassword;
 
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
+        setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
         // --- Tabs ---
         JTabbedPane tabs = new JTabbedPane();
@@ -50,9 +48,12 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
         // Listen for VM updates (e.g., save success/fail, loaded prefs)
         viewModel.addPropertyChangeListener(this);
 
-        // Build arrays after panels are created (used by setSelected)
+        // Build arrays after panels are created (used by applyVmToCheckboxes)
         dietBoxes = extractBoxesFromContainer(dietsPanel);
         intoleranceBoxes = extractBoxesFromContainer(intolerancesPanel);
+
+        // If VM already has prefs (e.g., set before this page opens), apply them now on EDT
+        SwingUtilities.invokeLater(this::applyVmToCheckboxes);
     }
 
     // -------- Preferences tab UI --------
@@ -60,13 +61,12 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
     private JPanel intolerancesPanel;
 
     private JComponent buildPreferencesTab() {
-        JPanel container = new JPanel(new BorderLayout(8,8));
+        JPanel container = new JPanel(new BorderLayout(8, 8));
 
         JLabel title = new JLabel("Your Preferences");
-        title.setFont(title.getFont().deriveFont(Font.BOLD, title.getFont().getSize()+2f));
+        title.setFont(title.getFont().deriveFont(Font.BOLD, title.getFont().getSize() + 2f));
         container.add(title, BorderLayout.NORTH);
 
-        // Two columns side-by-side with independent scroll
         JPanel twoCols = new JPanel(new GridLayout(1, 2, 8, 8));
 
         dietsPanel = new JPanel(new GridLayout(0, 1));
@@ -81,7 +81,6 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
         twoCols.add(wrapScroll(intolerancesPanel));
         container.add(twoCols, BorderLayout.CENTER);
 
-        // Save button pinned at the bottom
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton save = new JButton("Save Preferences");
         save.addActionListener(e -> savePreferences());
@@ -103,13 +102,13 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
     private JComponent buildSecurityTab() {
         JPanel p = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8,8,8,8);
+        gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
         int r = 0;
         JLabel title = new JLabel("Account Security");
-        title.setFont(title.getFont().deriveFont(Font.BOLD, title.getFont().getSize()+2f));
+        title.setFont(title.getFont().deriveFont(Font.BOLD, title.getFont().getSize() + 2f));
         gbc.gridx = 0; gbc.gridy = r++; gbc.gridwidth = 2;
         p.add(title, gbc);
 
@@ -132,9 +131,7 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
 
     // -------- Public API --------
     public void loadPreferencesForUser(String username) {
-        // Keep username in VM for the save call
         viewModel.setUsername(username);
-        // Ask the use case to load; presenter will set VM.preferences and fire change
         controller.loadPreferences(username);
     }
 
@@ -150,21 +147,32 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
         return s == null ? "" : s.trim().toLowerCase();
     }
 
-    private void setSelected(JCheckBox[] boxes, Map<String, Integer> map) {
-        if (map == null) return;
+    // Centralized apply: ViewModel -> checkboxes
+    private void applyVmToCheckboxes() {
+        Preferences p = viewModel.getPreferences();
+        if (p == null) return;
 
-        Map<String,Integer> normMap = new HashMap<>();
-        for (var e : map.entrySet()) {
-            normMap.put(norm(e.getKey()), e.getValue());
+        Map<String, Integer> dietsIn = p.getDiets() != null ? p.getDiets() : Map.of();
+        Map<String, Integer> intsIn  = p.getIntolerances() != null ? p.getIntolerances() : Map.of();
+
+        Map<String, Integer> diets = new HashMap<>();
+        for (var e : dietsIn.entrySet()) diets.put(norm(e.getKey()), e.getValue());
+
+        Map<String, Integer> ints = new HashMap<>();
+        for (var e : intsIn.entrySet()) ints.put(norm(e.getKey()), e.getValue());
+
+        for (JCheckBox cb : dietBoxes) {
+            Integer v = diets.get(norm(cb.getText()));
+            cb.setSelected(v != null && v != 0);
+        }
+        for (JCheckBox cb : intoleranceBoxes) {
+            Integer v = ints.get(norm(cb.getText()));
+            cb.setSelected(v != null && v != 0);
         }
 
-        for (JCheckBox cb : boxes) {
-            Integer v = normMap.get(norm(cb.getText()));
-            boolean on = v != null && v != 0;
-            cb.setSelected(on);
-        }
+        revalidate();
+        repaint();
     }
-
 
     private Map<String, Integer> getSelectedMap(JCheckBox[] boxes) {
         Map<String, Integer> map = new HashMap<>();
@@ -178,21 +186,18 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
         Map<String, Integer> dietsMap = getSelectedMap(dietBoxes);
         Map<String, Integer> intolerancesMap = getSelectedMap(intoleranceBoxes);
         Preferences prefs = new Preferences(dietsMap, intolerancesMap);
+
         controller.savePreferences(viewModel.getUsername(), prefs);
+        // Reload to hydrate VM from DB (and trigger propertyChange -> applyVmToCheckboxes)
         controller.loadPreferences(viewModel.getUsername());
     }
 
-
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        Preferences p = viewModel.getPreferences();
+
         SwingUtilities.invokeLater(() -> {
-            Preferences prefs = viewModel.getPreferences();
-            if (prefs != null) {
-                setSelected(dietBoxes, prefs.getDiets());
-                setSelected(intoleranceBoxes, prefs.getIntolerances());
-                revalidate();
-                repaint();
-            }
+            applyVmToCheckboxes();
             String msg = viewModel.getMessage();
             if (msg != null && !msg.isBlank()) {
                 JOptionPane.showMessageDialog(this, msg, "Preferences", JOptionPane.INFORMATION_MESSAGE);
@@ -200,4 +205,5 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
             }
         });
     }
+
 }

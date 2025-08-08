@@ -80,29 +80,35 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
         }
     }
 
-    @Override
     public Preferences getPreferences(String username) {
-        JSONObject combined = fetchRestrictionsAndIntolerances(username);
-        if (combined == null) {
+        JSONObject response = fetchRestrictionsAndIntolerances(username);
+        if (response == null) {
             return new Preferences(new HashMap<>(), new HashMap<>());
         }
 
         Map<String, Integer> dietsMap = new HashMap<>();
         Map<String, Integer> intolerancesMap = new HashMap<>();
 
-        // Fill diets map
-        for (String diet : DIETS) {
-            int value = combined.optInt(diet, 0);
-            dietsMap.put(diet, value);
+        // Get the preferences and intolerances objects from the response
+        JSONObject preferences = response.optJSONObject("preferences");
+        JSONObject intolerances = response.optJSONObject("intolerances");
+
+        // Fill diets map from preferences object
+        if (preferences != null) {
+            for (String key : preferences.keySet()) {
+                dietsMap.put(key, preferences.optInt(key, 0));
+            }
         }
 
-        // Fill intolerances map
-        for (String intolerance : INTOLERANCES) {
-            int value = combined.optInt(intolerance, 0);
-            intolerancesMap.put(intolerance, value);
+        // Fill intolerances map from intolerances object
+        if (intolerances != null) {
+            for (String key : intolerances.keySet()) {
+                intolerancesMap.put(key, intolerances.optInt(key, 0));
+            }
         }
 
-        return new Preferences(dietsMap, intolerancesMap);
+        Preferences result = new Preferences(dietsMap, intolerancesMap);
+        return result;
     }
 
 
@@ -135,8 +141,6 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
                 sb.append(line);
             }
             reader.close();
-
-//            System.out.println("Raw Supabase response: " + sb);
 
             return new org.json.JSONArray(sb.toString()).getJSONObject(0);
         } catch (Exception e) {
