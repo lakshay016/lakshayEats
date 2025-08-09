@@ -37,8 +37,7 @@ public final class ChangePasswordUseCaseFactory {
             LoggedInViewModel loggedInViewModel,
             ChangePasswordUserDataAccessInterface userDataAccessObject) {
 
-        final ChangePasswordOutputBoundary changePasswordOutputBoundary = new LoggedInPresenter(viewManagerModel,
-                loggedInViewModel);
+        final ChangePasswordOutputBoundary changePasswordOutputBoundary = new LoggedInPresenter(loggedInViewModel);
 
         final UserFactory userFactory = new CommonUserFactory();
 
