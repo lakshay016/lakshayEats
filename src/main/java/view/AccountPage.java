@@ -9,12 +9,19 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import interface_adapter.logged_in.ChangePasswordController;
+import interface_adapter.logged_in.LoggedInViewModel;
+
 public class AccountPage extends JPanel {
     private final PreferencesController controller;
     private final PreferencesViewModel viewModel;
 
     private final JCheckBox[] dietBoxes;
     private final JCheckBox[] intoleranceBoxes;
+
+    private final ChangePasswordController changePasswordController;
+    private final LoggedInViewModel changePasswordViewModel;
+    private final Runnable onLogout;
 
     // Full lists — match DBUserPreferenceDataAccessObject
     private static final String[] DIETS = {
@@ -28,9 +35,13 @@ public class AccountPage extends JPanel {
             "Tree Nut", "Wheat"
     };
 
-    public AccountPage(PreferencesController controller, PreferencesViewModel viewModel) {
+    public AccountPage(PreferencesController controller, PreferencesViewModel viewModel, ChangePasswordController changePasswordController,
+                       LoggedInViewModel changePasswordViewModel, Runnable onLogout) {
         this.controller = controller;
         this.viewModel = viewModel;
+        this.changePasswordController = changePasswordController;
+        this.changePasswordViewModel = changePasswordViewModel;
+        this.onLogout = onLogout;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -54,7 +65,47 @@ public class AccountPage extends JPanel {
         saveButton.addActionListener(e -> savePreferences());
         add(Box.createVerticalStrut(10));
         add(saveButton);
+
+        // Change Password button
+        JButton changePasswordButton = new JButton("Change Password");
+        changePasswordButton.addActionListener(e -> {
+            JPasswordField pf = new JPasswordField();
+            int result = JOptionPane.showConfirmDialog(
+                    this, pf, "Enter new password",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (result == JOptionPane.OK_OPTION) {
+                String newPassword = new String(pf.getPassword());
+                changePasswordController.execute(changePasswordViewModel.getState().getUsername(), newPassword);            }
+        });
+        add(Box.createVerticalStrut(10));
+        add(changePasswordButton);
+
+        // Listen for success signal from presenter
+        changePasswordViewModel.addPropertyChangeListener(evt -> {
+            if ("password".equals(evt.getPropertyName())) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Password updated for " + changePasswordViewModel.getState().getUsername());
+            }
+        });
+
+        // Log Out button
+        JButton logoutButton = new JButton("Log Out");
+        logoutButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to log out?",
+                    "Confirm Logout",
+                    JOptionPane.OK_CANCEL_OPTION
+            );
+            if (confirm == JOptionPane.OK_OPTION && onLogout != null) {
+                onLogout.run();
+            }
+        });
+        add(Box.createVerticalStrut(10));
+        add(logoutButton);
     }
+
 
     private JCheckBox[] createCheckboxGroup(String[] labels) {
         JCheckBox[] boxes = new JCheckBox[labels.length];
