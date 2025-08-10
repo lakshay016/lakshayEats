@@ -131,12 +131,19 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
         gbc.gridx = 0; gbc.gridy = r++; gbc.gridwidth = 2;
         p.add(title, gbc);
 
-        gbc.gridwidth = 1;
-        gbc.gridx = 0; gbc.gridy = r; p.add(new JLabel("Username"), gbc);
-        JTextField user = new JTextField(viewModel.getUsername() != null ? viewModel.getUsername() : "");
-        user.setEditable(false);
-        gbc.gridx = 1; p.add(user, gbc);
+        gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = r;
+
+        JLabel greeting = new JLabel("<html>Hello <b>" + currentUsername + "</b></html>");
+        greeting.setHorizontalAlignment(SwingConstants.CENTER);
+
+        p.add(greeting, gbc);
+
         r++;
+
+
+
 
         JButton change = new JButton("Change Password…");
         change.addActionListener(e -> showChangePasswordDialog());
