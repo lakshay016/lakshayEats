@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * What we need from /recipes/complexSearch.
@@ -22,6 +23,24 @@ public class SearchResult {
     private List<Ingredients> ingredients;
     @JsonIgnore
     private int weightPerServing;
+
+    public SearchResult() {
+    }
+
+    public SearchResult(int id, String title, String image, int readyInMinutes, int servings,
+                        double spoonacularScore, List<Instructions> instructions, List<Nutrition> nutrition,
+                        List<Ingredients> ingredients, int weightPerServing) {
+        this.id = id;
+        this.title = title;
+        this.image = image;
+        this.readyInMinutes = readyInMinutes;
+        this.servings = servings;
+        this.spoonacularScore = spoonacularScore;
+        this.instructions = instructions;
+        this.nutrition = nutrition;
+        this.ingredients = ingredients;
+        this.weightPerServing = weightPerServing;
+    }
 
 
     public int getId() {
@@ -103,5 +122,49 @@ public class SearchResult {
     public void setWeightPerServing(int weightPerServing) {
         this.weightPerServing = weightPerServing;
     }
+
+    @Override
+    public String toString() {
+        return "SearchResult{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", image='" + image + '\'' +
+                ", readyInMinutes=" + readyInMinutes +
+                ", servings=" + servings +
+                ", spoonacularScore=" + spoonacularScore +
+                // if these lists have nice toString(), they’ll print sensibly:
+                ", instructions=" + instructions +
+                ", nutrition=" + nutrition +
+                ", ingredients=" + ingredients +
+                ", weightPerServing=" + weightPerServing +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SearchResult)) return false;
+        SearchResult that = (SearchResult) o;
+        return id == that.id
+                && readyInMinutes == that.readyInMinutes
+                && servings == that.servings
+                && Double.compare(that.spoonacularScore, spoonacularScore) == 0
+                && weightPerServing == that.weightPerServing
+                && Objects.equals(title, that.title)
+                && Objects.equals(image, that.image)
+                && Objects.equals(instructions, that.instructions)
+                && Objects.equals(nutrition, that.nutrition)
+                && Objects.equals(ingredients, that.ingredients);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                id, title, image, readyInMinutes, servings,
+                spoonacularScore, instructions, nutrition, ingredients,
+                weightPerServing
+        );
+    }
+
 }
 
