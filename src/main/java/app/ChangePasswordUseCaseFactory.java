@@ -4,14 +4,14 @@ import data_access.DBUserDataAccessObject;
 import entity.CommonUserFactory;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
-import interface_adapter.logged_in.ChangePasswordController;
-import interface_adapter.logged_in.LoggedInPresenter;
-import interface_adapter.logged_in.LoggedInViewModel;
+import interface_adapter.change_password.ChangePasswordController;
+import interface_adapter.change_password.ChangePasswordPresenter;
+import interface_adapter.change_password.LoggedInViewModel;
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
 import use_case.change_password.ChangePasswordOutputBoundary;
 import use_case.change_password.ChangePasswordUserDataAccessInterface;
-import view.LoggedInView;
+import view.ChangePasswordView;
 
 
 public final class ChangePasswordUseCaseFactory {
@@ -21,14 +21,14 @@ public final class ChangePasswordUseCaseFactory {
     }
 
 
-    public static LoggedInView create(
+    public static ChangePasswordView create(
             ViewManagerModel viewManagerModel,
             LoggedInViewModel loggedInViewModel,
             ChangePasswordUserDataAccessInterface userDataAccessObject, DBUserDataAccessObject dbUserDataAccessObject) {
 
         final ChangePasswordController changePasswordController =
                 createChangePasswordUseCase(viewManagerModel, loggedInViewModel, userDataAccessObject);
-        return new LoggedInView(loggedInViewModel, changePasswordController, viewManagerModel, dbUserDataAccessObject);
+        return new ChangePasswordView(loggedInViewModel, changePasswordController, viewManagerModel, dbUserDataAccessObject);
 
     }
 
@@ -37,7 +37,7 @@ public final class ChangePasswordUseCaseFactory {
             LoggedInViewModel loggedInViewModel,
             ChangePasswordUserDataAccessInterface userDataAccessObject) {
 
-        final ChangePasswordOutputBoundary changePasswordOutputBoundary = new LoggedInPresenter(viewManagerModel,
+        final ChangePasswordOutputBoundary changePasswordOutputBoundary = new ChangePasswordPresenter(viewManagerModel,
                 loggedInViewModel);
 
         final UserFactory userFactory = new CommonUserFactory();

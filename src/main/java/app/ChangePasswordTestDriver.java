@@ -4,6 +4,7 @@ import data_access.DBChangePasswordDataAccessObject;
 import entity.CommonUserFactory;
 import entity.User;
 import entity.UserFactory;
+import interface_adapter.ViewManagerModel;
 import interface_adapter.change_password.ChangePasswordPresenter;
 import use_case.change_password.*;
 import interface_adapter.change_password.ChangePasswordPresenter;
@@ -15,7 +16,8 @@ public class ChangePasswordTestDriver {
         UserFactory factory = new CommonUserFactory();
         ChangePasswordUserDataAccessInterface dao = new DBChangePasswordDataAccessObject();
         LoggedInViewModel viewModel = new LoggedInViewModel();
-        ChangePasswordPresenter presenter = new ChangePasswordPresenter(viewModel);
+        ViewManagerModel viewManagerModel = new ViewManagerModel();
+        ChangePasswordPresenter presenter = new ChangePasswordPresenter(viewManagerModel, viewModel);
         ChangePasswordInputBoundary interactor = new ChangePasswordInteractor(dao, presenter, factory);
 
         // Test Data

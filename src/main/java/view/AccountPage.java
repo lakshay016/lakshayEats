@@ -1,6 +1,9 @@
 package view;
 
 import entity.Preferences;
+import interface_adapter.ViewManagerModel;
+import interface_adapter.change_password.ChangePasswordController;
+import interface_adapter.change_password.LoggedInViewModel;
 import interface_adapter.preferences.PreferencesController;
 import interface_adapter.preferences.PreferencesViewModel;
 
@@ -14,9 +17,14 @@ import java.util.Map;
 public class AccountPage extends JPanel implements PropertyChangeListener {
     private final PreferencesController controller;
     private final PreferencesViewModel viewModel;
-    private final Runnable onChangePassword;
     private final JCheckBox[] dietBoxes;
     private final JCheckBox[] intoleranceBoxes;
+    private final ViewManagerModel viewManagerModel;
+
+    private final ChangePasswordController changePasswordController;
+    private final LoggedInViewModel loggedInViewModel;
+    private final String currentUsername;
+
 
     private static final String[] DIETS = {
             "Gluten Free", "Ketogenic", "Vegetarian", "Lacto-Vegetarian",
@@ -30,11 +38,21 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
     };
 
     public AccountPage(PreferencesController controller,
-                       PreferencesViewModel viewModel,
-                       Runnable onChangePassword) {
+                       PreferencesViewModel viewModel,ChangePasswordController changePasswordController,
+                       LoggedInViewModel loggedInViewModel,
+                       String currentUsername,
+                       ViewManagerModel viewManagerModel)
+    {
         this.controller = controller;
         this.viewModel = viewModel;
-        this.onChangePassword = onChangePassword;
+        this.viewManagerModel = viewManagerModel;
+        this.changePasswordController = changePasswordController;
+        this.loggedInViewModel = loggedInViewModel;
+        this.currentUsername = currentUsername;
+
+        loggedInViewModel.addPropertyChangeListener(this);
+
+
 
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -55,6 +73,7 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
         // If VM already has prefs (e.g., set before this page opens), apply them now on EDT
         SwingUtilities.invokeLater(this::applyVmToCheckboxes);
     }
+
 
     // -------- Preferences tab UI --------
     private JPanel dietsPanel;
@@ -120,11 +139,21 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
         r++;
 
         JButton change = new JButton("Change Password…");
-        change.addActionListener(e -> {
-            if (onChangePassword != null) onChangePassword.run();
-        });
+        change.addActionListener(e -> showChangePasswordDialog());
+
         gbc.gridx = 1; gbc.gridy = r;
         p.add(change, gbc);
+        r++;
+
+        // Add logout button
+        JButton logout = new JButton("Logout");
+        logout.addActionListener(e -> {
+            // Navigate back to login view
+            viewManagerModel.setState("log in");
+            viewManagerModel.firePropertyChanged();
+        });
+        gbc.gridx = 1; gbc.gridy = r;
+        p.add(logout, gbc);
 
         return p;
     }
@@ -205,5 +234,63 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
             }
         });
     }
+
+    private void showChangePasswordDialog() {
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Change Password", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.setSize(350, 200);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // New password field
+        gbc.gridx = 0; gbc.gridy = 0;
+        mainPanel.add(new JLabel("New Password:"), gbc);
+        gbc.gridx = 1;
+        JPasswordField newPasswordField = new JPasswordField(20);
+        mainPanel.add(newPasswordField, gbc);
+// Confirm password field
+        gbc.gridx = 0; gbc.gridy = 1;
+        mainPanel.add(new JLabel("Confirm Password:"), gbc);
+        gbc.gridx = 1;
+        JPasswordField confirmPasswordField = new JPasswordField(20);
+        mainPanel.add(confirmPasswordField, gbc);
+
+        // Buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton confirmButton = new JButton("Change Password");
+        JButton cancelButton = new JButton("Cancel");
+
+        confirmButton.addActionListener(e -> {
+            String newPassword = new String(newPasswordField.getPassword());
+            String confirmPassword = new String(confirmPasswordField.getPassword());
+
+            if (!newPassword.equals(confirmPassword)) {
+                JOptionPane.showMessageDialog(dialog, "Passwords do not match!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }if (newPassword.length() < 6) {
+                JOptionPane.showMessageDialog(dialog, "Password must be at least 6 characters long!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Execute the change password use case
+            changePasswordController.execute(newPassword, currentUsername);
+            dialog.dispose();
+            JOptionPane.showMessageDialog(this, "Password changed successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        buttonPanel.add(confirmButton);
+        buttonPanel.add(cancelButton);
+        dialog.setSize(400, 200);
+        dialog.add(mainPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
 
 }

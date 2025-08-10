@@ -2,11 +2,13 @@ package view;
 
 import javax.swing.*;
 
-import data_access.DBRecipeDataAccessObject;
-import data_access.DBUserDataAccessObject;
-import data_access.SpoonacularAPIClient;
-import data_access.DBUserPreferenceDataAccessObject;
+import data_access.*;
 
+import entity.CommonUserFactory;
+import interface_adapter.ViewManagerModel;
+import interface_adapter.change_password.ChangePasswordController;
+import interface_adapter.change_password.ChangePasswordPresenter;
+import interface_adapter.change_password.LoggedInViewModel;
 import interface_adapter.save.SaveController;
 import interface_adapter.save.SavePresenter;
 import interface_adapter.save.SaveViewModel;
@@ -16,6 +18,9 @@ import interface_adapter.preferences.GetPreferencesPresenter;
 import interface_adapter.preferences.SavePreferencesPresenter;
 import interface_adapter.preferences.PreferencesViewModel;
 
+import use_case.change_password.ChangePasswordInputBoundary;
+import use_case.change_password.ChangePasswordInteractor;
+import use_case.change_password.ChangePasswordOutputBoundary;
 import use_case.save.SaveDataAccessInterface;
 import use_case.save.SaveInteractor;
 
@@ -33,7 +38,8 @@ import view.AccountPage;
 public final class AppShellFactory {
     private AppShellFactory() {}
 
-    public static JPanel create(String currentUsername, DBUserDataAccessObject dbUserDataAccessObject) {
+    public static JPanel create(String currentUsername, DBUserDataAccessObject dbUserDataAccessObject,
+                                ViewManagerModel viewManagerModel) {
         // === SAVE STACK ===
         SaveViewModel saveVm = new SaveViewModel();
         SaveDataAccessInterface saveDao = new DBRecipeDataAccessObject();
@@ -44,6 +50,13 @@ public final class AppShellFactory {
         String apiKey = System.getenv("SPOONACULAR_API_KEY");
         if (apiKey == null) throw new RuntimeException("Missing SPOONACULAR_API_KEY");
         SpoonacularAPIClient client = new SpoonacularAPIClient(apiKey);
+
+        // === CHANGE PASSWORD STACK ===
+        LoggedInViewModel loggedInViewModel = new LoggedInViewModel();
+        ChangePasswordOutputBoundary changePasswordPresenter = new ChangePasswordPresenter(viewManagerModel, loggedInViewModel);
+        CommonUserFactory userFactory = new CommonUserFactory();
+        ChangePasswordInputBoundary changePasswordInteractor = new ChangePasswordInteractor(dbUserDataAccessObject, changePasswordPresenter, userFactory);
+        ChangePasswordController changePasswordController = new ChangePasswordController(changePasswordInteractor);
 
         // === PREFERENCES STACK ===
         PreferencesViewModel prefVm = new PreferencesViewModel();
@@ -69,15 +82,10 @@ public final class AppShellFactory {
                 new DBRecipeDataAccessObject(),
                 new SpoonacularAPIClient(apiKey));
         var feedPage    = new FeedPage();
-        var friendsPage = new FriendsPage(currentUsername, dbUserDataAccessObject);
-        var accountPage = new AccountPage(prefController, prefVm, () -> {
-            JOptionPane.showMessageDialog(
-                    null,
-                    "Change password flow coming soon.",
-                    "Security",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-        });
+        var friendsPage = new FriendsPage(currentUsername, dbUserDataAccessObject,
+                new DBFriendRequestDataAccessObject(dbUserDataAccessObject));
+        var accountPage = new AccountPage(prefController, prefVm, changePasswordController,
+                loggedInViewModel, currentUsername, viewManagerModel);
         accountPage.loadPreferencesForUser(currentUsername);
 
 

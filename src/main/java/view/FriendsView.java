@@ -3,9 +3,12 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
 
 
 public class FriendsView extends JPanel {
@@ -23,14 +26,13 @@ public class FriendsView extends JPanel {
         }
     }
 
-    private Consumer<String> followHandler = id -> {
-    };
-    private Consumer<String> unfollowHandler = id -> {
-    };
+
     private Consumer<String> loadMessagesHandler = id -> {
     };
     private BiConsumer<String, String> sendMessageHandler = (id, text) -> {
     };
+
+    private Consumer<String> blockFriendHandler = username -> {};
 
     // UI
     private final JPanel friendsListPanel = new JPanel();
@@ -91,17 +93,56 @@ public class FriendsView extends JPanel {
             messagesModel.addElement("You: " + txt);
             inputField.setText("");
         });
+
+        // Wire up the add button
+        addButton.addActionListener(e -> {
+            String targetUsername = usernameField.getText().trim();
+            if (!targetUsername.isEmpty()) {
+                sendFriendRequestHandler.accept(targetUsername);
+                usernameField.setText(""); // Clear the field
+            }
+        });
     }
 
-    public void onFollow(Consumer<String> handler) {
-        this.followHandler = handler != null ? handler : id -> {
-        };
+    private Consumer<String> sendFriendRequestHandler = username -> {};
+
+    public void onSendFriendRequest(Consumer<String> handler) {
+        this.sendFriendRequestHandler = handler != null ? handler : username -> {};
     }
 
-    public void onUnfollow(Consumer<String> handler) {
-        this.unfollowHandler = handler != null ? handler : id -> {
-        };
+
+    public void showFriendRequestPopup(String requesterUsername) {
+        SwingUtilities.invokeLater(() -> {
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    requesterUsername + " wants to be your friend. Accept?",
+                    "Friend Request",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (choice == JOptionPane.YES_OPTION) {
+                acceptFriendRequestHandler.accept(requesterUsername);
+            } else {
+                rejectFriendRequestHandler.accept(requesterUsername);
+            }
+        });
     }
+
+    private Consumer<String> acceptFriendRequestHandler = username -> {};
+    private Consumer<String> rejectFriendRequestHandler = username -> {};
+
+    public void onAcceptFriendRequest(Consumer<String> handler) {
+        this.acceptFriendRequestHandler = handler != null ? handler : username -> {};
+    }
+
+    public void onRejectFriendRequest(Consumer<String> handler) {
+        this.rejectFriendRequestHandler = handler != null ? handler : username -> {};
+    }
+
+
+
+
 
     public void onLoadMessages(Consumer<String> handler) {
         this.loadMessagesHandler = handler != null ? handler : id -> {
@@ -138,21 +179,16 @@ public class FriendsView extends JPanel {
 
             JLabel name = new JLabel(f.name);
             name.setFont(name.getFont().deriveFont(Font.BOLD, 13f));
-            row.add(name, BorderLayout.CENTER);
+            row.add(name, BorderLayout.WEST);
 
-            JButton action = new JButton(f.following ? "Unfollow" : "Follow");
-            action.addActionListener(e -> {
-                if (f.following) {
-                    unfollowHandler.accept(f.id);
-                    f.following = false;
-                    action.setText("Follow");
-                } else {
-                    followHandler.accept(f.id);
-                    f.following = true;
-                    action.setText("Unfollow");
-                }
-            });
-            row.add(action, BorderLayout.EAST);
+            // Add block button for friends (not for pending requests)
+            if (f.following) { // if they are friends
+                JButton blockButton = new JButton("Block");
+                blockButton.addActionListener(e -> {
+                    blockFriendHandler.accept(f.id);
+                });
+                row.add(blockButton, BorderLayout.EAST);
+            }
 
             // Select friend to load messages
             row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -171,5 +207,8 @@ public class FriendsView extends JPanel {
         friendsListPanel.add(Box.createVerticalGlue());
         friendsListPanel.revalidate();
         friendsListPanel.repaint();
+    }
+    public void onBlockFriend(Consumer<String> handler) {
+        this.blockFriendHandler = handler != null ? handler : username -> {};
     }
 }
