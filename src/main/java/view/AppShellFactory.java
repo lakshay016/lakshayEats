@@ -3,6 +3,7 @@ package view;
 import javax.swing.*;
 
 import data_access.DBRecipeDataAccessObject;
+import data_access.DBUserDataAccessObject;
 import data_access.SpoonacularAPIClient;
 import data_access.DBUserPreferenceDataAccessObject;
 
@@ -32,7 +33,7 @@ import view.AccountPage;
 public final class AppShellFactory {
     private AppShellFactory() {}
 
-    public static JPanel create(String currentUsername) {
+    public static JPanel create(String currentUsername, DBUserDataAccessObject dbUserDataAccessObject) {
         // === SAVE STACK ===
         SaveViewModel saveVm = new SaveViewModel();
         SaveDataAccessInterface saveDao = new DBRecipeDataAccessObject();
@@ -68,9 +69,7 @@ public final class AppShellFactory {
                 new DBRecipeDataAccessObject(),
                 new SpoonacularAPIClient(apiKey));
         var feedPage    = new FeedPage();
-        var friendsPage = new FriendsPage();
-
-        // in AppShellFactory.create(...)
+        var friendsPage = new FriendsPage(currentUsername, dbUserDataAccessObject);
         var accountPage = new AccountPage(prefController, prefVm, () -> {
             JOptionPane.showMessageDialog(
                     null,
@@ -80,6 +79,7 @@ public final class AppShellFactory {
             );
         });
         accountPage.loadPreferencesForUser(currentUsername);
+
 
         // Load preferences immediately for the user
         accountPage.loadPreferencesForUser(currentUsername);

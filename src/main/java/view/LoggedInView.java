@@ -28,6 +28,14 @@ import use_case.save.SaveInputBoundary;
 import use_case.save.SaveInteractor;
 import use_case.search.SearchInteractor;
 import view.search.SearchFrame;
+import view.FriendsView;
+import data_access.DBFriendDataAccessObject;
+import data_access.DBMessageDataAccessObject;
+import org.json.JSONObject;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
 
 
 public class LoggedInView extends JPanel implements ActionListener, PropertyChangeListener {
@@ -63,6 +71,8 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         final JLabel usernameInfo = new JLabel("Currently logged in: ");
         username = new JLabel();
 
+
+
         final JPanel buttons = new JPanel();
         //logOut = new JButton("Log Out");
         //buttons.add(logOut);
@@ -77,7 +87,84 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         buttons.add(searchButton);
         setPreferredSize(new Dimension(600, 400));
         setMinimumSize(new Dimension(500, 300));
+        JButton friendsButton = new JButton("Friends");
+        buttons.add(friendsButton);
 
+        friendsButton.addActionListener(e -> {
+            String currentUser = userDataAccessObject.getCurrentUsername();
+            if (currentUser == null || currentUser.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No current user", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this), "Friends", Dialog.ModalityType.MODELESS);
+            FriendsView fv = new FriendsView();
+            d.setContentPane(fv);
+            d.setSize(900, 600);
+            d.setLocationRelativeTo(this);
+
+            final DBFriendDataAccessObject friendDAO = new DBFriendDataAccessObject();
+            final DBMessageDataAccessObject messageDAO = new DBMessageDataAccessObject();
+
+            // FOLLOW
+            fv.onFollow(friendId -> {
+                new SwingWorker<Void, Void>() {
+                    @Override protected Void doInBackground() throws Exception {
+                        updateFriendRelationship(currentUser, friendId, true);
+                        return null;
+                    }
+                    @Override protected void done() { refreshFriends(fv, currentUser); }
+                }.execute();
+            });
+
+            // UNFOLLOW
+            fv.onUnfollow(friendId -> {
+                new SwingWorker<Void, Void>() {
+                    @Override protected Void doInBackground() throws Exception {
+                        updateFriendRelationship(currentUser, friendId, false);
+                        return null;
+                    }
+                    @Override protected void done() { refreshFriends(fv, currentUser); }
+                }.execute();
+            });
+
+            // LOAD MESSAGES
+            fv.onLoadMessages(friendId -> {
+                new SwingWorker<List<String>, Void>() {
+                    @Override protected List<String> doInBackground() {
+                        List<String> out = new ArrayList<>();
+                        for (org.json.JSONObject obj : messageDAO.fetchAllMessages()) {
+                            String sender = obj.optString("sender", "");
+                            String receiver = obj.optString("receiver", "");
+                            if ((sender.equals(currentUser) && receiver.equals(friendId)) ||
+                                    (sender.equals(friendId) && receiver.equals(currentUser))) {
+                                String content = obj.optString("content", "");
+                                out.add(sender.equals(currentUser) ? "You: " + content : friendId + ": " + content);
+                            }
+                        }
+                        return out;
+                    }
+                    @Override protected void done() {
+                        try { fv.setMessages(get()); } catch (Exception ignore) {}
+                    }
+                }.execute();
+            });
+
+            // SEND MESSAGE
+            fv.onSendMessage((friendId, text) -> {
+                new SwingWorker<Void, Void>() {
+                    @Override protected Void doInBackground() {
+                        messageDAO.saveMessage(currentUser, friendId, text, LocalDateTime.now());
+                        return null;
+                    }
+                }.execute();
+            });
+
+            // Initial load
+            refreshFriends(fv, currentUser);
+
+            d.setVisible(true);
+        });
         setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
 
 
@@ -167,7 +254,44 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         this.add(buttons);
     }
 
+    private void refreshFriends(FriendsView fv, String currentUser) {
+        new SwingWorker<List<FriendsView.FriendItem>, Void>() {
+            @Override
+            protected List<FriendsView.FriendItem> doInBackground() throws Exception {
+                DBFriendDataAccessObject dao = new DBFriendDataAccessObject();
+                List<FriendsView.FriendItem> out = new ArrayList<>();
+                JSONObject json = dao.fetch(currentUser);
+                if (json == null) return out;
 
+                Set<String> friends = dao.toSet(json.getJSONArray("friends"));
+                for (String f : friends) {
+                    out.add(new FriendsView.FriendItem(f, f, true)); // name = username
+                }
+                return out;
+            }
+            @Override
+            protected void done() {
+                try { fv.setFriends(get()); } catch (Exception ignore) {}
+            }
+        }.execute();
+    }
+
+    private void updateFriendRelationship(String currentUser, String friendId, boolean follow) throws Exception {
+        DBFriendDataAccessObject dao = new DBFriendDataAccessObject();
+        JSONObject json = dao.fetch(currentUser);
+
+        java.util.Set<String> friends = new java.util.HashSet<>();
+        java.util.Set<String> requests = new java.util.HashSet<>();
+        java.util.Set<String> blocked  = new java.util.HashSet<>();
+
+        if (json != null) {
+            if (json.has("friends"))  friends.addAll(dao.toSet(json.getJSONArray("friends")));
+            if (json.has("requests")) requests.addAll(dao.toSet(json.getJSONArray("requests")));
+            if (json.has("blocked"))  blocked.addAll(dao.toSet(json.getJSONArray("blocked")));
+        }
+        if (follow) friends.add(friendId); else friends.remove(friendId);
+        dao.save(currentUser, friends, requests, blocked);
+    }
     public void actionPerformed(ActionEvent evt) {
         System.out.println("Click " + evt.getActionCommand());
     }
