@@ -18,12 +18,13 @@ public class Nutrition {
     public Nutrition() {
     }
 
-    public Nutrition(String calories, double amount, String unit, double dailyvalue) {
-        this.name = calories;
+    public Nutrition(String name, double amount, String unit, double dailyvalue) {
+        this.name = name;
         this.amount = amount;
         this.unit = unit;
         this.percentOfDailyNeeds = dailyvalue;
     }
+
 
 
     public String getName() {

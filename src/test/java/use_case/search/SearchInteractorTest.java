@@ -33,11 +33,10 @@ public class SearchInteractorTest {
 
     @Before
     public void setUp() {
-        apiKey = "cfcca17d54f748a7a1ea761b96019963";
-//        apiKey = System.getenv("SPOONACULAR_API_KEY");
-//        if (apiKey == null) {
-//            throw new IllegalStateException("Set SPOONACULAR_API_KEY in your env");
-//        }
+        apiKey = System.getenv("SPOONACULAR_API_KEY");
+        if (apiKey == null) {
+            throw new IllegalStateException("Set SPOONACULAR_API_KEY in your env");
+        }
 
 
         presenter = new SearchOutputBoundary() {

@@ -147,6 +147,7 @@ public class FilterOptions {
     public Integer getNumber() { return number; }
     public void setNumber(Integer number) { this.number = number; }
 
+    // TODO: DELETE all of builder if safe after merged into main FOR GOOD.
      public static class Builder {
         private FilterOptions opts = new FilterOptions();
 
