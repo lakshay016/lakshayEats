@@ -134,7 +134,6 @@ public class SpoonacularAPIClient implements SearchDataAccessInterface {
 
                 results.add(sr);
             }
-            System.out.println(results + "\n\n\n");
             return results;
         }
     }
