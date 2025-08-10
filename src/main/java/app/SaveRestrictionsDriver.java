@@ -3,6 +3,7 @@ package app;
 import data_access.DBUserPreferenceDataAccessObject;
 import org.json.JSONObject;
 
+// TODO: DELETE
 public class SaveRestrictionsDriver {
     public static void main(String[] args) {
         DBUserPreferenceDataAccessObject db = new DBUserPreferenceDataAccessObject();

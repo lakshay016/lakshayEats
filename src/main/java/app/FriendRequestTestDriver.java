@@ -13,6 +13,7 @@ import use_case.friendRequest.FriendRequestOutputData;
 import java.util.HashSet;
 import java.util.Set;
 
+// TODO: DELETE
 public class FriendRequestTestDriver {
     public static void main(String[] args) {
         CommonUserFactory factory = new CommonUserFactory();

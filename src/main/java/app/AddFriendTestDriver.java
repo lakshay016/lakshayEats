@@ -7,6 +7,7 @@ import entity.CommonUser;
 
 import java.util.Set;
 
+// TODO: DELETE
 public class AddFriendTestDriver {
     public static void main(String[] args) {
         DBFriendDataAccessObject db = new DBFriendDataAccessObject();

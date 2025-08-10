@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.util.Set;
 
+// TODO: DELETE
 public class FriendTestDriver {
     public static void main(String[] args) {
         DBFriendDataAccessObject db = new DBFriendDataAccessObject();

@@ -10,6 +10,7 @@ import use_case.change_password.*;
 import interface_adapter.change_password.ChangePasswordPresenter;
 import interface_adapter.change_password.LoggedInViewModel;
 
+// TODO: DELETE
 public class ChangePasswordTestDriver {
     public static void main(String[] args) {
         // Setup

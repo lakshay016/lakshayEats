@@ -14,7 +14,7 @@ import use_case.signup.SignupOutputBoundary;
 import use_case.signup.SignupUserDataAccessInterface;
 import view.SignupView;
 
-
+//TODO: relocate to use_case folder or soemthere else. it shouldnt be in the app.
 public final class SignupUseCaseFactory {
 
     private SignupUseCaseFactory() {

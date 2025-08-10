@@ -147,7 +147,7 @@ public class FilterOptions {
     public Integer getNumber() { return number; }
     public void setNumber(Integer number) { this.number = number; }
 
-    // TODO: DELET STATIC CLASS AND BUILDER FUNCTIONS ONCE APP IS COMPLETE
+    // TODO: DELETE STATIC CLASS AND BUILDER FUNCTIONS ONCE APP IS COMPLETE
     public static class Builder {
         private FilterOptions opts = new FilterOptions();
 

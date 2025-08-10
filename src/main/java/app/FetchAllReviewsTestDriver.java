@@ -5,6 +5,7 @@ import entity.Review;
 
 import java.util.List;
 
+// TODO: DELETE
 public class FetchAllReviewsTestDriver {
     public static void main(String[] args) {
         DBReviewDataAccessObject db = new DBReviewDataAccessObject();

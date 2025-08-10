@@ -13,7 +13,7 @@ import use_case.change_password.ChangePasswordOutputBoundary;
 import use_case.change_password.ChangePasswordUserDataAccessInterface;
 import view.ChangePasswordView;
 
-
+// TODO: relocate to use_case folder or soemthere else. it shouldnt be in the app.
 public final class ChangePasswordUseCaseFactory {
 
     private ChangePasswordUseCaseFactory() {

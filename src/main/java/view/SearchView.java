@@ -12,6 +12,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+// TODO: DELETE
 public class SearchView extends JPanel implements PropertyChangeListener {
     private final SearchViewModel viewModel;
     private final SearchController controller;

@@ -6,6 +6,7 @@ import use_case.login.LoginUserDataAccessInterface;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO: DELETE if not used in testing
 public class InMemoryUserDataAccessObject implements LoginUserDataAccessInterface {
     private final Map<String, User> users = new HashMap<>();
     private String currentUsername = null;

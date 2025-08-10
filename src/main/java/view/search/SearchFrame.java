@@ -24,7 +24,7 @@ import interface_adapter.search.SearchPresenter;
 import use_case.search.SearchInteractor;
 import data_access.SpoonacularAPIClient;
 import view.search.RecipeCardPanel;
-
+// TODO: DELETE
 public class SearchFrame extends JFrame {
     private final SearchViewModel viewModel;
     private final SearchController controller;

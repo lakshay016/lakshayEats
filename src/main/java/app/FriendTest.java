@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+// TODO: DELETE
 public class FriendTest {
     public static void main(String[] args) {
         DBFriendDataAccessObject db = new DBFriendDataAccessObject();
