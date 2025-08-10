@@ -9,7 +9,7 @@ import data_access.SpoonacularAPIClient;
 import entity.CommonUserFactory;
 import entity.FilterOptions;
 import interface_adapter.ViewManagerModel;
-import interface_adapter.logged_in.LoggedInViewModel;
+import interface_adapter.change_password.LoggedInViewModel;
 import interface_adapter.login.LoginViewModel;
 import interface_adapter.search.SearchController;
 import interface_adapter.search.SearchPresenter;
@@ -17,7 +17,7 @@ import interface_adapter.search.SearchViewModel;
 import interface_adapter.signup.SignupViewModel;
 import use_case.search.SearchInteractor;
 import use_case.signup.SignupUserDataAccessInterface;
-import view.LoggedInView;
+import view.ChangePasswordView;
 import view.LoginView;
 import view.SignupView;
 import view.ViewManager;
@@ -58,7 +58,7 @@ public class Main {
                 userDataAccessObject);
         views.add(loginView, loginView.getViewName());
 
-        final LoggedInView loggedInView = ChangePasswordUseCaseFactory.create(viewManagerModel,
+        final ChangePasswordView loggedInView = ChangePasswordUseCaseFactory.create(viewManagerModel,
                 loggedInViewModel, userDataAccessObject, userDataAccessObject);
 
         // When we land on LoggedInView, immediately build the App Shell and switch to it.
@@ -97,8 +97,6 @@ public class Main {
         SearchInteractor searchInteractor = new SearchInteractor(client, searchPresenter);
         SearchController searchController = new SearchController(searchInteractor);
 
-        //SearchView searchView = new SearchView(searchViewModel, searchController, new FilterOptions());
-        //views.add(searchView, "search");
 
         viewManagerModel.setState(signupView.getViewName());
         viewManagerModel.firePropertyChanged();

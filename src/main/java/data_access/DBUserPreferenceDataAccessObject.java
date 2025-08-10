@@ -32,6 +32,7 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
 
     @Override
     public void savePreferences(String username, Preferences preferences) {
+
         JSONObject restrictionsJson = new JSONObject();
         for (Map.Entry<String, Integer> entry : preferences.getDiets().entrySet()) {
             restrictionsJson.put(entry.getKey(), entry.getValue());
@@ -42,11 +43,11 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
             intolerancesJson.put(entry.getKey(), entry.getValue());
         }
 
-        savePreferencesToDB(username, restrictionsJson, intolerancesJson);
+        saveRestrictionsAndIntolerances(username, restrictionsJson, intolerancesJson);
     }
 
 
-    public void savePreferencesToDB(String username, JSONObject restrictions, JSONObject intolerances) {
+    public void saveRestrictionsAndIntolerances(String username, JSONObject restrictions, JSONObject intolerances) {
         try {
             String urlStr = supabaseUrl + "/rest/v1/" + tableName;
             URL url = new URL(urlStr);
@@ -79,29 +80,35 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
         }
     }
 
-    @Override
     public Preferences getPreferences(String username) {
-        JSONObject combined = fetchRestrictionsAndIntolerances(username);
-        if (combined == null) {
+        JSONObject response = fetchRestrictionsAndIntolerances(username);
+        if (response == null) {
             return new Preferences(new HashMap<>(), new HashMap<>());
         }
 
         Map<String, Integer> dietsMap = new HashMap<>();
         Map<String, Integer> intolerancesMap = new HashMap<>();
 
-        // Fill diets map
-        for (String diet : DIETS) {
-            int value = combined.optInt(diet, 0);
-            dietsMap.put(diet, value);
+        // Get the preferences and intolerances objects from the response
+        JSONObject preferences = response.optJSONObject("preferences");
+        JSONObject intolerances = response.optJSONObject("intolerances");
+
+        // Fill diets map from preferences object
+        if (preferences != null) {
+            for (String key : preferences.keySet()) {
+                dietsMap.put(key, preferences.optInt(key, 0));
+            }
         }
 
-        // Fill intolerances map
-        for (String intolerance : INTOLERANCES) {
-            int value = combined.optInt(intolerance, 0);
-            intolerancesMap.put(intolerance, value);
+        // Fill intolerances map from intolerances object
+        if (intolerances != null) {
+            for (String key : intolerances.keySet()) {
+                intolerancesMap.put(key, intolerances.optInt(key, 0));
+            }
         }
 
-        return new Preferences(dietsMap, intolerancesMap);
+        Preferences result = new Preferences(dietsMap, intolerancesMap);
+        return result;
     }
 
 
@@ -109,9 +116,9 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
         try {
             String urlStr = supabaseUrl + "/rest/v1/" + tableName + "?username=eq." + username + "&select=*";
             URL url = new URL(urlStr);
-            System.out.println("Fetching for username: " + username);
-            System.out.println("Request URL: " + urlStr);
-            System.out.println("API key: " + apiKey);
+//            System.out.println("Fetching for username: " + username);
+//            System.out.println("Request URL: " + urlStr);
+//            System.out.println("API key: " + apiKey);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("GET");
@@ -134,8 +141,6 @@ public class DBUserPreferenceDataAccessObject implements PreferencesDataAccessIn
                 sb.append(line);
             }
             reader.close();
-
-            System.out.println("Raw Supabase response: " + sb);
 
             return new org.json.JSONArray(sb.toString()).getJSONObject(0);
         } catch (Exception e) {

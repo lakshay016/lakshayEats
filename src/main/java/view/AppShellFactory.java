@@ -2,16 +2,13 @@ package view;
 
 import javax.swing.*;
 
-import data_access.DBRecipeDataAccessObject;
-import data_access.DBUserDataAccessObject;
-import data_access.SpoonacularAPIClient;
-import data_access.DBUserPreferenceDataAccessObject;
+import data_access.*;
 
 import entity.CommonUserFactory;
 import interface_adapter.ViewManagerModel;
-import interface_adapter.logged_in.ChangePasswordController;
-import interface_adapter.logged_in.LoggedInPresenter;
-import interface_adapter.logged_in.LoggedInViewModel;
+import interface_adapter.change_password.ChangePasswordController;
+import interface_adapter.change_password.ChangePasswordPresenter;
+import interface_adapter.change_password.LoggedInViewModel;
 import interface_adapter.save.SaveController;
 import interface_adapter.save.SavePresenter;
 import interface_adapter.save.SaveViewModel;
@@ -38,8 +35,6 @@ import use_case.preferences.save_preferences.SavePreferencesOutputBoundary;
 
 import view.AccountPage;
 
-import java.awt.*;
-
 public final class AppShellFactory {
     private AppShellFactory() {}
 
@@ -56,6 +51,13 @@ public final class AppShellFactory {
         if (apiKey == null) throw new RuntimeException("Missing SPOONACULAR_API_KEY");
         SpoonacularAPIClient client = new SpoonacularAPIClient(apiKey);
 
+        // === CHANGE PASSWORD STACK ===
+        LoggedInViewModel loggedInViewModel = new LoggedInViewModel();
+        ChangePasswordOutputBoundary changePasswordPresenter = new ChangePasswordPresenter(viewManagerModel, loggedInViewModel);
+        CommonUserFactory userFactory = new CommonUserFactory();
+        ChangePasswordInputBoundary changePasswordInteractor = new ChangePasswordInteractor(dbUserDataAccessObject, changePasswordPresenter, userFactory);
+        ChangePasswordController changePasswordController = new ChangePasswordController(changePasswordInteractor);
+
         // === PREFERENCES STACK ===
         PreferencesViewModel prefVm = new PreferencesViewModel();
         PreferencesDataAccessInterface prefDao = new DBUserPreferenceDataAccessObject();
@@ -71,27 +73,6 @@ public final class AppShellFactory {
         // Controller for both
         PreferencesController prefController = new PreferencesController(getInteractor, saveInteractor);
 
-        // === CHANGE PASSWORD STACK ===
-        LoggedInViewModel cpVm = new LoggedInViewModel();
-        var cpState = cpVm.getState();
-        cpState.setUsername(currentUsername);
-        cpVm.setState(cpState);
-
-        ChangePasswordOutputBoundary cpPresenter = new LoggedInPresenter(cpVm);
-        ChangePasswordInputBoundary cpInteractor =
-                new ChangePasswordInteractor(dbUserDataAccessObject, cpPresenter, new CommonUserFactory());
-        ChangePasswordController cpController = new ChangePasswordController(cpInteractor);
-
-        Runnable onLogout = () -> {
-            dbUserDataAccessObject.setCurrentUsername(null);
-            SwingUtilities.invokeLater(() -> {
-                viewManagerModel.setState("log in");
-                viewManagerModel.firePropertyChanged();
-            });
-        };
-
-
-
         // === PAGES ===
         var searchPage = new view.search.SearchView(
                 currentUsername,
@@ -101,33 +82,16 @@ public final class AppShellFactory {
                 new DBRecipeDataAccessObject(),
                 new SpoonacularAPIClient(apiKey));
         var feedPage    = new FeedPage();
-        var friendsPage = new FriendsPage(currentUsername, dbUserDataAccessObject);
+        var friendsPage = new FriendsPage(currentUsername, dbUserDataAccessObject,
+                new DBFriendRequestDataAccessObject(dbUserDataAccessObject));
+        var accountPage = new AccountPage(prefController, prefVm, changePasswordController,
+                loggedInViewModel, currentUsername, viewManagerModel);
+        accountPage.loadPreferencesForUser(currentUsername);
 
-
-        var accountPage = new AccountPage(prefController, prefVm, cpController, cpVm, onLogout);
-
-
-
-
-// Keep form at preferred height so scrolling can engage
-        JPanel accountWrapper = new JPanel(new BorderLayout());
-        accountWrapper.add(accountPage, BorderLayout.NORTH);
-
-        var accountScroll = new JScrollPane(
-                accountWrapper,
-                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-        );
-        accountScroll.setBorder(null);
-        accountScroll.getVerticalScrollBar().setUnitIncrement(16);
-
-
-        accountScroll.setBorder(null);
-        accountScroll.getVerticalScrollBar().setUnitIncrement(16);
 
         // Load preferences immediately for the user
         accountPage.loadPreferencesForUser(currentUsername);
 
-        return new AppShell(searchPage, savedPage, feedPage, friendsPage, accountScroll);
+        return new AppShell(searchPage, savedPage, feedPage, friendsPage, accountPage);
     }
 }

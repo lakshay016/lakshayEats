@@ -14,9 +14,9 @@ import data_access.DBRecipeDataAccessObject;
 import data_access.DBUserDataAccessObject;
 import data_access.SpoonacularAPIClient;
 import interface_adapter.ViewManagerModel;
-import interface_adapter.logged_in.ChangePasswordController;
-import interface_adapter.logged_in.LoggedInState;
-import interface_adapter.logged_in.LoggedInViewModel;
+import interface_adapter.change_password.ChangePasswordController;
+import interface_adapter.change_password.LoggedInState;
+import interface_adapter.change_password.LoggedInViewModel;
 import interface_adapter.save.SaveController;
 import interface_adapter.save.SavePresenter;
 import interface_adapter.save.SaveViewModel;
@@ -28,17 +28,15 @@ import use_case.save.SaveInputBoundary;
 import use_case.save.SaveInteractor;
 import use_case.search.SearchInteractor;
 import view.search.SearchFrame;
-import view.FriendsView;
 import data_access.DBFriendDataAccessObject;
 import data_access.DBMessageDataAccessObject;
 import org.json.JSONObject;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
 
 
-public class LoggedInView extends JPanel implements ActionListener, PropertyChangeListener {
+public class ChangePasswordView extends JPanel implements ActionListener, PropertyChangeListener {
 
     private final String viewName = "logged in";
     private final LoggedInViewModel loggedInViewModel;
@@ -54,7 +52,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     private final JTextField passwordInputField = new JTextField(15);
     private final JButton changePassword;
 
-    public LoggedInView(LoggedInViewModel loggedInViewModel, ChangePasswordController changePasswordController,
+    public ChangePasswordView(LoggedInViewModel loggedInViewModel, ChangePasswordController changePasswordController,
                         ViewManagerModel viewManagerModel, DBUserDataAccessObject userDataAccessObject) {
         this.loggedInViewModel = loggedInViewModel;
         this.loggedInViewModel.addPropertyChangeListener(this);
@@ -106,27 +104,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
             final DBFriendDataAccessObject friendDAO = new DBFriendDataAccessObject();
             final DBMessageDataAccessObject messageDAO = new DBMessageDataAccessObject();
 
-            // FOLLOW
-            fv.onFollow(friendId -> {
-                new SwingWorker<Void, Void>() {
-                    @Override protected Void doInBackground() throws Exception {
-                        updateFriendRelationship(currentUser, friendId, true);
-                        return null;
-                    }
-                    @Override protected void done() { refreshFriends(fv, currentUser); }
-                }.execute();
-            });
 
-            // UNFOLLOW
-            fv.onUnfollow(friendId -> {
-                new SwingWorker<Void, Void>() {
-                    @Override protected Void doInBackground() throws Exception {
-                        updateFriendRelationship(currentUser, friendId, false);
-                        return null;
-                    }
-                    @Override protected void done() { refreshFriends(fv, currentUser); }
-                }.execute();
-            });
 
             // LOAD MESSAGES
             fv.onLoadMessages(friendId -> {
@@ -161,7 +139,6 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
             });
 
             // Initial load
-            refreshFriends(fv, currentUser);
 
             d.setVisible(true);
         });
@@ -254,27 +231,6 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         this.add(buttons);
     }
 
-    private void refreshFriends(FriendsView fv, String currentUser) {
-        new SwingWorker<List<FriendsView.FriendItem>, Void>() {
-            @Override
-            protected List<FriendsView.FriendItem> doInBackground() throws Exception {
-                DBFriendDataAccessObject dao = new DBFriendDataAccessObject();
-                List<FriendsView.FriendItem> out = new ArrayList<>();
-                JSONObject json = dao.fetch(currentUser);
-                if (json == null) return out;
-
-                Set<String> friends = dao.toSet(json.getJSONArray("friends"));
-                for (String f : friends) {
-                    out.add(new FriendsView.FriendItem(f, f, true)); // name = username
-                }
-                return out;
-            }
-            @Override
-            protected void done() {
-                try { fv.setFriends(get()); } catch (Exception ignore) {}
-            }
-        }.execute();
-    }
 
     private void updateFriendRelationship(String currentUser, String friendId, boolean follow) throws Exception {
         DBFriendDataAccessObject dao = new DBFriendDataAccessObject();

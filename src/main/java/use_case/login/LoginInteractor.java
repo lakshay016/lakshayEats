@@ -24,33 +24,36 @@ public class LoginInteractor implements LoginInputBoundary {
 
     }
 
+    // ... existing code ...
+
     @Override
     public void execute(LoginInputData inputData) {
-        User user = userDataAccess.get(inputData.getUsername());
-
-        if (user == null || !user.getPassword().equals(inputData.getPassword())) {
-            presenter.prepareFailView("Incorrect username or password");
-        } else {
-            presenter.prepareSuccessView(new LoginOutputData(inputData.getUsername(),"Login Successful!"));
-        }
         final String username = inputData.getUsername();
         final String password = inputData.getPassword();
+
+        // Check if user exists
         if (!userDataAccess.existsByName(username)) {
-            presenter.prepareFailView(username + ": Account is not in database.");
+            presenter.prepareFailView("Account not found: " + username);
+            return;
         }
-        else {
-            final String pwd = userDataAccess.get(username).getPassword();
-            if (!password.equals(pwd)) {
-                presenter.prepareFailView("Wrong password for \"" + username + "\".");
-            }
-            else {
 
-                userDataAccess.setCurrentUsername(user.getUsername());
-
-                final LoginOutputData loginOutputData = new LoginOutputData(user.getUsername(),
-                        "Successfully logged in!");
-                presenter.prepareSuccessView(loginOutputData);
-            }
+        // Get user and check password
+        User user = userDataAccess.get(username);
+        if (user == null) {
+            presenter.prepareFailView("Error retrieving user data");
+            return;
         }
+
+        if (!password.equals(user.getPassword())) {
+            presenter.prepareFailView("Incorrect password for " + username);
+            return;
+        }
+
+        // Login successful
+        userDataAccess.setCurrentUsername(user.getUsername());
+        final LoginOutputData loginOutputData = new LoginOutputData(user.getUsername(), "Successfully logged in!");
+        presenter.prepareSuccessView(loginOutputData);
     }
+
+// ... existing code ...
 }

@@ -19,4 +19,12 @@ public class Preferences {
         return intolerances;
     }
 
+    @Override
+    public String toString() {
+        return "Preferences{" +
+                "diets=" + diets +
+                ", intolerances=" + intolerances +
+                '}';
+    }
+
 }

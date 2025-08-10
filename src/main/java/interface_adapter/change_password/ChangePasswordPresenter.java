@@ -1,15 +1,18 @@
-package interface_adapter.logged_in;
+package interface_adapter.change_password;
 
 import interface_adapter.ViewManagerModel;
 import use_case.change_password.ChangePasswordOutputBoundary;
 import use_case.change_password.ChangePasswordOutputData;
 
 
-public class LoggedInPresenter implements ChangePasswordOutputBoundary {
+public class ChangePasswordPresenter implements ChangePasswordOutputBoundary {
 
     private final LoggedInViewModel loggedInViewModel;
+    private final ViewManagerModel viewManagerModel;
 
-    public LoggedInPresenter(LoggedInViewModel loggedInViewModel) {
+    public ChangePasswordPresenter(ViewManagerModel viewManagerModel,
+                             LoggedInViewModel loggedInViewModel) {
+        this.viewManagerModel = viewManagerModel;
         this.loggedInViewModel = loggedInViewModel;
     }
 
