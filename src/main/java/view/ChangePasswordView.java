@@ -10,30 +10,13 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import data_access.DBRecipeDataAccessObject;
 import data_access.DBUserDataAccessObject;
-import data_access.SpoonacularAPIClient;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.change_password.ChangePasswordController;
 import interface_adapter.change_password.LoggedInState;
 import interface_adapter.change_password.LoggedInViewModel;
-import interface_adapter.save.SaveController;
-import interface_adapter.save.SavePresenter;
-import interface_adapter.save.SaveViewModel;
-import interface_adapter.search.SearchController;
-import interface_adapter.search.SearchPresenter;
-import interface_adapter.search.SearchViewModel;
-import use_case.save.SaveDataAccessInterface;
-import use_case.save.SaveInputBoundary;
-import use_case.save.SaveInteractor;
-import use_case.search.SearchInteractor;
-import view.search.SearchFrame;
 import data_access.DBFriendDataAccessObject;
-import data_access.DBMessageDataAccessObject;
 import org.json.JSONObject;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.ArrayList;
 
 
 public class ChangePasswordView extends JPanel implements ActionListener, PropertyChangeListener {
@@ -77,111 +60,16 @@ public class ChangePasswordView extends JPanel implements ActionListener, Proper
 
         changePassword = new JButton("Change Password");
         buttons.add(changePassword);
-        JButton searchButton = new JButton("Search");
-        searchButton.addActionListener(e -> {
-            viewManagerModel.setState("search");
-            viewManagerModel.firePropertyChanged();
-        });
-        buttons.add(searchButton);
+
+
         setPreferredSize(new Dimension(600, 400));
         setMinimumSize(new Dimension(500, 300));
-        JButton friendsButton = new JButton("Friends");
-        buttons.add(friendsButton);
-
-        friendsButton.addActionListener(e -> {
-            String currentUser = userDataAccessObject.getCurrentUsername();
-            if (currentUser == null || currentUser.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No current user", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this), "Friends", Dialog.ModalityType.MODELESS);
-            FriendsView fv = new FriendsView();
-            d.setContentPane(fv);
-            d.setSize(900, 600);
-            d.setLocationRelativeTo(this);
-
-            final DBFriendDataAccessObject friendDAO = new DBFriendDataAccessObject();
-            final DBMessageDataAccessObject messageDAO = new DBMessageDataAccessObject();
 
 
-
-            // LOAD MESSAGES
-            fv.onLoadMessages(friendId -> {
-                new SwingWorker<List<String>, Void>() {
-                    @Override protected List<String> doInBackground() {
-                        List<String> out = new ArrayList<>();
-                        for (org.json.JSONObject obj : messageDAO.fetchAllMessages()) {
-                            String sender = obj.optString("sender", "");
-                            String receiver = obj.optString("receiver", "");
-                            if ((sender.equals(currentUser) && receiver.equals(friendId)) ||
-                                    (sender.equals(friendId) && receiver.equals(currentUser))) {
-                                String content = obj.optString("content", "");
-                                out.add(sender.equals(currentUser) ? "You: " + content : friendId + ": " + content);
-                            }
-                        }
-                        return out;
-                    }
-                    @Override protected void done() {
-                        try { fv.setMessages(get()); } catch (Exception ignore) {}
-                    }
-                }.execute();
-            });
-
-            // SEND MESSAGE
-            fv.onSendMessage((friendId, text) -> {
-                new SwingWorker<Void, Void>() {
-                    @Override protected Void doInBackground() {
-                        messageDAO.saveMessage(currentUser, friendId, text, LocalDateTime.now());
-                        return null;
-                    }
-                }.execute();
-            });
-
-            // Initial load
-
-            d.setVisible(true);
-        });
         setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
 
 
         passwordInputField.setPreferredSize(new Dimension(200, 30));
-        searchButton.addActionListener(e -> {
-            // Create and show SearchFrame
-
-            String apiKey = System.getenv("SPOONACULAR_API_KEY");
-            if (apiKey == null) {
-                JOptionPane.showMessageDialog(this,
-                        "Please set SPOONACULAR_API_KEY in your environment.",
-                        "Missing API Key", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            SpoonacularAPIClient client = new SpoonacularAPIClient(apiKey);
-            SearchViewModel searchViewModel = new SearchViewModel();
-            SearchPresenter searchPresenter = new SearchPresenter(searchViewModel);
-            SearchInteractor searchInteractor = new SearchInteractor(client, searchPresenter);
-            SearchController searchController = new SearchController(searchInteractor);
-
-            SaveViewModel saveViewModel = new SaveViewModel();
-            SavePresenter savePresenter = new SavePresenter(saveViewModel);
-            SaveDataAccessInterface saveDataAccess = new DBRecipeDataAccessObject();
-            SaveInputBoundary saveInteractor = new SaveInteractor(saveDataAccess, savePresenter);
-            SaveController saveController = new SaveController(saveInteractor);
-
-            String currentUser = userDataAccessObject.getCurrentUsername();
-            if (currentUser == null) {
-                currentUser = "demo_user"; // fallback
-            }
-            SearchFrame searchFrame = new SearchFrame(currentUser, saveController);
-            searchFrame.setVisible(true);
-            //closing main window
-            SwingUtilities.getWindowAncestor(this).setVisible(false);
-
-        });
-        buttons.add(searchButton);
-
-        //logOut.addActionListener(this);
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 

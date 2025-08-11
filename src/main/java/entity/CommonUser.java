@@ -1,15 +1,9 @@
 package entity;
-import app.LoginTestDriver;
-import data_access.DBRecipeDataAccessObject;
-import data_access.DBUserDataAccessObject;
-import org.json.JSONException;
 import org.json.JSONObject;
-import use_case.login.LoginUserDataAccessInterface;
 import data_access.DBFriendDataAccessObject;
 import data_access.DBMessageDataAccessObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;

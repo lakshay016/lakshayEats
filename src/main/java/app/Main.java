@@ -7,7 +7,6 @@ import javax.swing.*;
 import data_access.DBUserDataAccessObject;
 import data_access.SpoonacularAPIClient;
 import entity.CommonUserFactory;
-import entity.FilterOptions;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.change_password.LoggedInViewModel;
 import interface_adapter.login.LoginViewModel;
@@ -15,13 +14,14 @@ import interface_adapter.search.SearchController;
 import interface_adapter.search.SearchPresenter;
 import interface_adapter.search.SearchViewModel;
 import interface_adapter.signup.SignupViewModel;
+import use_case.login.LoginUseCaseFactory;
 import use_case.search.SearchInteractor;
-import use_case.signup.SignupUserDataAccessInterface;
+import use_case.signup.SignupUseCaseFactory;
 import view.ChangePasswordView;
 import view.LoginView;
 import view.SignupView;
 import view.ViewManager;
-import view.FeedView;
+import use_case.change_password.ChangePasswordUseCaseFactory;
 
 
 public class Main {
