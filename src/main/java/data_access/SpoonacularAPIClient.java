@@ -104,8 +104,6 @@ public class SpoonacularAPIClient implements SearchDataAccessInterface {
                 .url(url.build())
                 .get()
                 .build();
-        // TODO: DELETE ONCE EVERYTHING WORKS
-        System.out.println("Calling complexSearch with URL: " + url);
 
         // 2) Execute
         try (Response resp = http.newCall(req).execute()) {
