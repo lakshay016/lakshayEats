@@ -1,4 +1,4 @@
-package app;
+package use_case.signup;
 
 import entity.CommonUserFactory;
 import entity.UserFactory;
@@ -8,13 +8,8 @@ import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupPresenter;
 import interface_adapter.signup.SignupViewModel;
 import use_case.login.LoginUserDataAccessInterface;
-import use_case.signup.SignupInputBoundary;
-import use_case.signup.SignupInteractor;
-import use_case.signup.SignupOutputBoundary;
-import use_case.signup.SignupUserDataAccessInterface;
 import view.SignupView;
 
-//TODO: relocate to use_case folder or soemthere else. it shouldnt be in the app.
 public final class SignupUseCaseFactory {
 
     private SignupUseCaseFactory() {

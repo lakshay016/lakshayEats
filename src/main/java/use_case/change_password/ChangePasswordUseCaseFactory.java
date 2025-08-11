@@ -1,4 +1,4 @@
-package app;
+package use_case.change_password;
 
 import data_access.DBUserDataAccessObject;
 import entity.CommonUserFactory;
@@ -7,13 +7,8 @@ import interface_adapter.ViewManagerModel;
 import interface_adapter.change_password.ChangePasswordController;
 import interface_adapter.change_password.ChangePasswordPresenter;
 import interface_adapter.change_password.LoggedInViewModel;
-import use_case.change_password.ChangePasswordInputBoundary;
-import use_case.change_password.ChangePasswordInteractor;
-import use_case.change_password.ChangePasswordOutputBoundary;
-import use_case.change_password.ChangePasswordUserDataAccessInterface;
 import view.ChangePasswordView;
 
-// TODO: relocate to use_case folder or soemthere else. it shouldnt be in the app.
 public final class ChangePasswordUseCaseFactory {
 
     private ChangePasswordUseCaseFactory() {
