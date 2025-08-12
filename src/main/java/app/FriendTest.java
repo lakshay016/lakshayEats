@@ -1,6 +1,7 @@
 package app;
 
 import entity.CommonUser;
+import entity.CommonUserFactory;
 import data_access.DBFriendDataAccessObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -39,13 +40,14 @@ public class FriendTest {
             JSONObject data5 = db.fetch(username5);
             JSONObject data6 = db.fetch(username6);
 
-            // Step 3: Create users
-            CommonUser user1 = new CommonUser(username1, "1234");
-            CommonUser user2 = new CommonUser(username2, "1234");
-            CommonUser user3 = new CommonUser(username3, "1234");
-            CommonUser user4 = new CommonUser(username4, "1234");
-            CommonUser user5 = new CommonUser(username5, "1234");
-            CommonUser user6 = new CommonUser(username6, "1234");
+            // Step 3: Create users with hashed passwords
+            CommonUserFactory factory = new CommonUserFactory();
+            CommonUser user1 = (CommonUser) factory.createUser(username1, "1234");
+            CommonUser user2 = (CommonUser) factory.createUser(username2, "1234");
+            CommonUser user3 = (CommonUser) factory.createUser(username3, "1234");
+            CommonUser user4 = (CommonUser) factory.createUser(username4, "1234");
+            CommonUser user5 = (CommonUser) factory.createUser(username5, "1234");
+            CommonUser user6 = (CommonUser) factory.createUser(username6, "1234");
 
             // Step 4: Inject DB data into user objects
             user1.setFriends(db.toSet(data1.getJSONArray("friends")));
