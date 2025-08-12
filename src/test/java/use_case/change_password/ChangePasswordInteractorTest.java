@@ -3,6 +3,7 @@ package use_case.change_password;
 import entity.User;
 import entity.UserFactory;
 import org.junit.Test;
+import util.PasswordHasher;
 
 import static org.junit.Assert.*;
 
@@ -17,7 +18,9 @@ public class ChangePasswordInteractorTest {
         @Override public void prepareFailView(String errorMessage) { fail = errorMessage; }
     }
     private static class SimpleFactory implements UserFactory {
-        @Override public User createUser(String name, String password) { return new SimpleUser(name, password); }
+        @Override public User createUser(String name, String password) {
+            return new SimpleUser(name, PasswordHasher.hash(password));
+        }
     }
     private static class SimpleUser implements User {
         String name, pwd;
@@ -32,6 +35,7 @@ public class ChangePasswordInteractorTest {
         ChangePasswordInteractor interactor = new ChangePasswordInteractor(dao, presenter, new SimpleFactory());
         interactor.execute(new ChangePasswordInputData("alice", "new"));
         assertEquals("alice", dao.changed.getUsername());
+        assertEquals(PasswordHasher.hash("new"), dao.changed.getPassword());
         assertEquals("alice", presenter.success.getUsername());
     }
 }

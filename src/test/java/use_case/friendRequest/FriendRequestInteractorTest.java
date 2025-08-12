@@ -3,6 +3,7 @@ package use_case.friendRequest;
 import entity.Recipe;
 import entity.User;
 import org.junit.Test;
+import util.PasswordHasher;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -45,8 +46,8 @@ public class FriendRequestInteractorTest {
     @Test
     public void sendFriendRequestSucceeds() {
         InMemoryDAO dao = new InMemoryDAO();
-        dao.users.put("alice", new SimpleUser("alice", "a"));
-        dao.users.put("bob", new SimpleUser("bob", "b"));
+        dao.users.put("alice", new SimpleUser("alice", PasswordHasher.hash("a")));
+        dao.users.put("bob", new SimpleUser("bob", PasswordHasher.hash("b")));
         TestPresenter presenter = new TestPresenter();
         FriendRequestInteractor interactor = new FriendRequestInteractor(presenter, dao);
         interactor.sendFriendRequest(new FriendRequestInputData("alice", "bob"));
@@ -57,8 +58,8 @@ public class FriendRequestInteractorTest {
     @Test
     public void sendMessageFailsWhenNotFriends() {
         InMemoryDAO dao = new InMemoryDAO();
-        dao.users.put("alice", new SimpleUser("alice", "a"));
-        dao.users.put("bob", new SimpleUser("bob", "b"));
+        dao.users.put("alice", new SimpleUser("alice", PasswordHasher.hash("a")));
+        dao.users.put("bob", new SimpleUser("bob", PasswordHasher.hash("b")));
         TestPresenter presenter = new TestPresenter();
         FriendRequestInteractor interactor = new FriendRequestInteractor(presenter, dao);
         interactor.sendMessage(new FriendRequestInputData("alice", "bob", "hi"));
