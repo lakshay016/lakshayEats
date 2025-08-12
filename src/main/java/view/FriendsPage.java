@@ -139,7 +139,6 @@ public class FriendsPage extends JPanel {
                 }
             }
         }.execute();
-        System.out.println("1");
     }
 
 

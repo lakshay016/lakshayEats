@@ -80,7 +80,7 @@ public final class AppShellFactory {
                 prefDao);
         var savedPage   = new view.SavedPage(currentUsername, saveController,
                 new DBRecipeDataAccessObject(),
-                new SpoonacularAPIClient(apiKey));
+                new SpoonacularAPIClient(apiKey), saveVm);
         var feedPage    = new FeedPage();
         var friendsPage = new FriendsPage(currentUsername, dbUserDataAccessObject,
                 new DBFriendRequestDataAccessObject(dbUserDataAccessObject));
