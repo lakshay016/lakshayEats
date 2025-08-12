@@ -14,4 +14,14 @@ public class CommonUserFactoryTest {
         assertEquals("charlie", user.getUsername());
         assertEquals(PasswordHasher.hash("secret"), user.getPassword());
     }
+
+    @Test
+    public void factoryCreatesUserWithHashedPassword() {
+        CommonUserFactory factory = new CommonUserFactory();
+        String hashed = PasswordHasher.hash("secret");
+        User user = factory.createUserWithHashedPassword("charlie", hashed);
+        assertTrue(user instanceof CommonUser);
+        assertEquals("charlie", user.getUsername());
+        assertEquals(hashed, user.getPassword());
+    }
 }
