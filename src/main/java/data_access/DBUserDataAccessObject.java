@@ -121,7 +121,7 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
             JSONObject userJson = fetchUser(username);
             if (userJson == null) return null;
             String password = userJson.getString("password");
-            return factory.createUser(username, password);
+            return factory.createUserWithHashedPassword(username, password);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
