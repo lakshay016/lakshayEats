@@ -4,6 +4,7 @@ import entity.User;
 import entity.UserFactory;
 import org.junit.Test;
 import use_case.login.LoginUserDataAccessInterface;
+import util.PasswordHasher;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,13 +34,15 @@ public class SignupInteractorTest {
         @Override public String getPassword() { return pwd; }
     }
     private static class SimpleFactory implements UserFactory {
-        @Override public User createUser(String name, String password) { return new SimpleUser(name, password); }
+        @Override public User createUser(String name, String password) {
+            return new SimpleUser(name, PasswordHasher.hash(password));
+        }
     }
 
     @Test
     public void failWhenUsernameExists() {
         InMemoryUserDAO dao = new InMemoryUserDAO();
-        dao.save(new SimpleUser("alice", "pw"));
+        dao.save(new SimpleUser("alice", PasswordHasher.hash("pw")));
         TestPresenter presenter = new TestPresenter();
         SignupInteractor interactor = new SignupInteractor(dao, presenter, new SimpleFactory());
         interactor.execute(new SignupInputData("alice", "pw", "pw"));
@@ -62,6 +65,7 @@ public class SignupInteractorTest {
         SignupInteractor interactor = new SignupInteractor(dao, presenter, new SimpleFactory());
         interactor.execute(new SignupInputData("charlie", "pw", "pw"));
         assertNotNull(dao.get("charlie"));
+        assertEquals(PasswordHasher.hash("pw"), dao.get("charlie").getPassword());
         assertEquals("Signup successful!", presenter.successData.getMessage());
     }
 }

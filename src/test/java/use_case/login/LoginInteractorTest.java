@@ -2,6 +2,7 @@ package use_case.login;
 
 import entity.User;
 import org.junit.Test;
+import util.PasswordHasher;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class LoginInteractorTest {
     @Test
     public void failWhenPasswordIncorrect() {
         InMemoryUserDAO dao = new InMemoryUserDAO();
-        dao.save(new SimpleUser("bob", "123"));
+        dao.save(new SimpleUser("bob", PasswordHasher.hash("123")));
         TestPresenter presenter = new TestPresenter();
         LoginInteractor interactor = new LoginInteractor(dao, presenter);
         interactor.execute(new LoginInputData("bob", "wrong"));
@@ -52,7 +53,7 @@ public class LoginInteractorTest {
     @Test
     public void successWhenCredentialsMatch() {
         InMemoryUserDAO dao = new InMemoryUserDAO();
-        dao.save(new SimpleUser("bob", "123"));
+        dao.save(new SimpleUser("bob", PasswordHasher.hash("123")));
         TestPresenter presenter = new TestPresenter();
         LoginInteractor interactor = new LoginInteractor(dao, presenter);
         interactor.execute(new LoginInputData("bob", "123"));

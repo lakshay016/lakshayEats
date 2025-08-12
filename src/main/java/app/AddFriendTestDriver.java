@@ -3,6 +3,7 @@ package app;
 import data_access.DBFriendDataAccessObject;
 import org.json.JSONObject;
 import entity.CommonUser;
+import entity.CommonUserFactory;
 
 
 import java.util.Set;
@@ -34,9 +35,10 @@ public class AddFriendTestDriver {
                 System.out.println(blockedFriend + " is already blocked by " + user);
             }
             else {
-                CommonUser Lakshay = new CommonUser("Lakshay", "1234");
-                CommonUser Dylan = new CommonUser("Dylan", "1234");
-                CommonUser Bobby = new CommonUser("Bobby", "1234");
+                CommonUserFactory factory = new CommonUserFactory();
+                CommonUser Lakshay = (CommonUser) factory.createUser("Lakshay", "1234");
+                CommonUser Dylan = (CommonUser) factory.createUser("Dylan", "1234");
+                CommonUser Bobby = (CommonUser) factory.createUser("Bobby", "1234");
                 db.save("Lakshay",friends,requests,blocked);
                 db.save("Dylan",friends,requests,blocked);
                 db.save("Bobby",friends,requests,blocked);

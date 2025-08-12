@@ -1,7 +1,7 @@
 package use_case.login;
 
-import entity.CommonUser;
 import entity.User;
+import util.PasswordHasher;
 
 public class LoginInteractor implements LoginInputBoundary {
     private final LoginUserDataAccessInterface userDataAccess;
@@ -44,7 +44,7 @@ public class LoginInteractor implements LoginInputBoundary {
             return;
         }
 
-        if (!password.equals(user.getPassword())) {
+        if (!PasswordHasher.hash(password).equals(user.getPassword())) {
             presenter.prepareFailView("Incorrect password for " + username);
             return;
         }

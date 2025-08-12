@@ -1,6 +1,7 @@
 package entity;
 
 import org.junit.Test;
+import util.PasswordHasher;
 
 import static org.junit.Assert.*;
 
@@ -11,6 +12,6 @@ public class CommonUserFactoryTest {
         User user = factory.createUser("charlie", "secret");
         assertTrue(user instanceof CommonUser);
         assertEquals("charlie", user.getUsername());
-        assertEquals("secret", user.getPassword());
+        assertEquals(PasswordHasher.hash("secret"), user.getPassword());
     }
 }
