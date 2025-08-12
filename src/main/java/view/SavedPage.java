@@ -2,6 +2,8 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,23 +12,27 @@ import data_access.DBRecipeDataAccessObject;
 import data_access.SpoonacularAPIClient;
 import entity.SearchResult;
 import interface_adapter.save.SaveController;
+import interface_adapter.save.SaveViewModel;
 import view.search.RecipeCardPanel;
 
-public class SavedPage extends JPanel {
+public class SavedPage extends JPanel implements PropertyChangeListener {
     private final String userId;
     private final JPanel resultsPanel;
     private final SpoonacularAPIClient client;
     private final DBRecipeDataAccessObject dao;
     private final SaveController saveController;
+    private final SaveViewModel saveViewModel;
 
     public SavedPage(String userId,
                      SaveController saveController,
                      DBRecipeDataAccessObject dao,
-                     SpoonacularAPIClient client) {
+                     SpoonacularAPIClient client, SaveViewModel saveViewModel) {
         this.userId = userId;
         this.saveController = saveController;
         this.dao = dao;
         this.client = client;
+        this.saveViewModel = saveViewModel;
+        this.saveViewModel.addPropertyChangeListener(this);
 
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
@@ -44,6 +50,14 @@ public class SavedPage extends JPanel {
     /** Re-run the query (handy if user saves/unsaves something elsewhere). */
     public void reload() {
         fetchAndDisplaySavedRecipes();
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ("saveState".equals(evt.getPropertyName())) {
+            // When the save state changes, refresh the saved recipes
+            SwingUtilities.invokeLater(this::reload);
+        }
     }
 
     private void fetchAndDisplaySavedRecipes() {

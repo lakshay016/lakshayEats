@@ -16,12 +16,14 @@ public class SavePresenter implements SaveOutputBoundary {
         SaveState state = viewModel.getSaveState();
         viewModel.setSaveState(state);
         state.setMessage("Saved!");
+        viewModel.setSaveState(state);
     }
 
     @Override
     public void prepareErrorView(String error) {
         SaveState newState = viewModel.getSaveState();
         newState.setMessage(error);
+        viewModel.setSaveState(newState);
         viewModel.setSaveState(newState);
     }
 
