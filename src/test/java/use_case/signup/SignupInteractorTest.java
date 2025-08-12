@@ -37,6 +37,10 @@ public class SignupInteractorTest {
         @Override public User createUser(String name, String password) {
             return new SimpleUser(name, PasswordHasher.hash(password));
         }
+
+        @Override public User createUserWithHashedPassword(String name, String hashedPassword) {
+            return new SimpleUser(name, hashedPassword);
+        }
     }
 
     @Test

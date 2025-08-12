@@ -6,4 +6,9 @@ package entity;
 public interface UserFactory {
 
     User createUser(String name, String password);
+
+    /**
+     * Creates a user when the provided password is already hashed.
+     */
+    User createUserWithHashedPassword(String name, String hashedPassword);
 }
