@@ -81,22 +81,30 @@ public class FriendsPage extends JPanel {
         });
         fv.onBlockFriend(friendId -> {
             friendRequestController.blockUser(currentUser, friendId);
-            // Refresh the friends list after blocking
+            refreshFriends(fv);
+        });
+        fv.onUnblockUser(blockedUsername -> {
+            friendRequestController.unblockUser(currentUser, blockedUsername);
+            refreshFriends(fv);
+        });
+        fv.onRemoveFriend(friendId -> {
+            friendRequestController.removeFriend(currentUser, friendId);
             refreshFriends(fv);
         });
 
-
         fv.onAcceptFriendRequest(requesterUsername -> {
             friendRequestController.acceptFriendRequest(currentUser, requesterUsername);
+            refreshFriends(fv);
         });
 
         fv.onRejectFriendRequest(requesterUsername -> {
             friendRequestController.denyFriendRequest(currentUser, requesterUsername);
+            refreshFriends(fv);
         });
 
         fv.onSendFriendRequest(targetUsername -> {
-            // Use your existing FriendRequestController to send the request
             friendRequestController.sendFriendRequest(currentUser, targetUsername);
+            refreshFriends(fv);
         });
         refreshFriends(fv);
 
@@ -108,25 +116,25 @@ public class FriendsPage extends JPanel {
             protected List<FriendsView.FriendItem> doInBackground() throws Exception {
                 List<FriendsView.FriendItem> out = new ArrayList<>();
                 List<String> allUsers = userDataAccessObject.getAllUsers();
+                List<String> blockedUsers = new ArrayList<>();
 
-
-                // Create FriendItems for all users
                 for (String user : allUsers) {
-                    // Skip the current user
                     if (user.equals(currentUser)) {
                         continue;
                     }
 
                     boolean isFriend = friendDAO.areFriends(currentUser, user);
-                    boolean hasRequestFromMe = friendDAO.hasFriendRequest(currentUser, user);
-                    boolean hasRequestToMe = friendDAO.hasFriendRequest(user, currentUser);
+                    boolean isBlocked = friendDAO.isBlocked(currentUser, user);
 
-                    // Only add users who are friends, have pending requests, or are relevant
-                    if (isFriend || hasRequestFromMe || hasRequestToMe) {
+                    if (isFriend) {
                         out.add(new FriendsView.FriendItem(user, user, isFriend));
                     }
+                    if (isBlocked){
+                        blockedUsers.add(user);
+                    }
                 }
-
+                fv.setFriends(out);
+                fv.setBlockedUsers(blockedUsers);
                 return out;
             }
 
@@ -144,7 +152,6 @@ public class FriendsPage extends JPanel {
 
 
     private void checkForIncomingRequests(FriendsView fv) {
-        // Use your existing friendDAO to check for requests
         AtomicInteger a = new AtomicInteger();
         try {
             List<String> allUsers = userDataAccessObject.getAllUsers();

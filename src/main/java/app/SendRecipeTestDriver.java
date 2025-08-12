@@ -22,19 +22,19 @@ public class SendRecipeTestDriver {
 
         try {
             userDataAccess.save(batman);
-        } catch (Exception _) {
+        } catch (Exception e_) {
         }
 
         try {
             userDataAccess.save(joker);
-        } catch (Exception _) {
+        } catch (Exception e_) {
         }
 
         Set<String> emptySet = new HashSet<>();
         try {
             friendDataAccess.save("Batman", emptySet, emptySet, emptySet);
             friendDataAccess.save("Joker", emptySet, emptySet, emptySet);
-        } catch (Exception _) {
+        } catch (Exception e_) {
         }
 
         System.out.println("Testing Simple Message and Recipe Sharing");

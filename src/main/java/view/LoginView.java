@@ -18,7 +18,10 @@ import javax.swing.event.DocumentListener;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginState;
 import interface_adapter.login.LoginViewModel;
-import view.LabelTextPanel;
+import java.awt.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.Box;
+import java.awt.Font;
 
 
 public class LoginView extends JPanel implements ActionListener, PropertyChangeListener {
@@ -137,8 +140,29 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
                 documentListenerHelper();
             }
         });
+        JLabel bigTitle = new JLabel("LAKSHAY EATS");
+        bigTitle.setFont(new Font("Comic Sans MS", Font.BOLD, 48));
+        bigTitle.setForeground(new Color(34, 139, 34));
+        bigTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bigTitle.setBorder(new EmptyBorder(50, 0, 30, 0));
+        JLabel label1 = new JLabel("Login to your Account");
+        label1.setFont(new Font("Comic Sans MS", Font.BOLD, 20));
+        label1.setForeground(new Color(34, 139, 34));
+        label1.setAlignmentX(Component.CENTER_ALIGNMENT);
+        label1.setBorder(new EmptyBorder(50,0,30,0));
 
-        this.add(title);
+        JLabel foodLabel = new JLabel("🍅🍔🍜🥦");
+        foodLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 100));
+        foodLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        foodLabel.setBorder(new EmptyBorder(20, 0, 20, 0));
+        this.setBackground(new Color(238, 255, 238));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        this.add(bigTitle);
+        this.add(foodLabel);
+        this.add(label1);
+        this.add(Box.createVerticalGlue());
+        this.add(Box.createVerticalStrut(10));
         this.add(usernameInfo);
         this.add(usernameErrorField);
         this.add(passwordInfo);

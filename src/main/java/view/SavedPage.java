@@ -47,7 +47,6 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
         fetchAndDisplaySavedRecipes();
     }
 
-    /** Re-run the query (handy if user saves/unsaves something elsewhere). */
     public void reload() {
         fetchAndDisplaySavedRecipes();
     }
@@ -55,7 +54,6 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ("saveState".equals(evt.getPropertyName())) {
-            // When the save state changes, refresh the saved recipes
             SwingUtilities.invokeLater(this::reload);
         }
     }
@@ -91,7 +89,6 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
         worker.execute();
     }
 
-    /** Match your SaveView approach: load by ID via client.loadIDs(List.of(id)). */
     private SearchResult fetchRecipeById(int id) {
         try {
             List<SearchResult> results = client.loadIDs(List.of(id));
@@ -102,7 +99,6 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
         }
     }
 
-    /** Render the cards list. */
     private void displayResults(List<SearchResult> recipes) {
         resultsPanel.removeAll();
 

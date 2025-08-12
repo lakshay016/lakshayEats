@@ -137,12 +137,24 @@ public class CommonUser implements User{
 
 
     public void blockUser(CommonUser user) throws IOException {
-        // Remove them from friends list
-        this.blocked.add(user.getUsername());
-        // Remove friend requests (if any)
-        this.removeFriend(user);
-        db.save(user.userName, user.friends, user.requests, user.blocked);
-        db.save(this.userName, this.friends, this.requests, this.blocked);
+            // Add them to blocked list
+            this.blocked.add(user.getUsername());
+
+            // Remove them from friends list
+            this.friends.remove(user.getUsername());
+
+            // Remove them from requests list
+            this.requests.remove(user.getUsername());
+
+            // Remove yourself from their friends list (regardless of current status)
+            user.friends.remove(this.userName);
+
+            // Remove yourself from their requests list
+            user.requests.remove(this.userName);
+
+            // Save both users' data
+            db.save(user.userName, user.friends, user.requests, user.blocked);
+            db.save(this.userName, this.friends, this.requests, this.blocked);
 
     }
 

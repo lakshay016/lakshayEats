@@ -1,6 +1,6 @@
 package view;
 
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -13,8 +13,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.Box;
+import java.awt.Font;
 
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupState;
@@ -87,10 +90,29 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         addUsernameListener();
         addPasswordListener();
         addRepeatPasswordListener();
-
+        JLabel tomatoLabel = new JLabel("🍅🍔🍜🥦");
+        tomatoLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 100));
+        tomatoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        tomatoLabel.setBorder(new EmptyBorder(20, 0, 20, 0));
+        JLabel bigTitle = new JLabel("LAKSHAY EATS");
+        bigTitle.setFont(new Font("Comic Sans MS", Font.BOLD, 48));
+        bigTitle.setForeground(new Color(34, 139, 34));
+        bigTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bigTitle.setBorder(new EmptyBorder(50, 0, 30, 0));
+        JLabel label1 = new JLabel("Create A Free Account!");
+        label1.setFont(new Font("Comic Sans MS", Font.BOLD, 20));
+        label1.setForeground(new Color(34, 139, 34));
+        label1.setAlignmentX(Component.CENTER_ALIGNMENT);
+        label1.setBorder(new EmptyBorder(50,0,30,0));
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setBackground(new Color(238, 255, 238));
+        this.add(bigTitle);
+        this.add(tomatoLabel);
+        this.add(label1);
 
-        this.add(title);
+        this.add(Box.createVerticalGlue());
+        this.add(Box.createVerticalStrut(20));
+
         this.add(usernameInfo);
         this.add(passwordInfo);
         this.add(repeatPasswordInfo);

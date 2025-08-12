@@ -169,6 +169,7 @@ public class DBFriendRequestDataAccessObject implements FriendRequestDataAccessI
 
     @Override
     public void blockUser(String blockerUsername, String blockedUsername) throws IOException {
+        // Update blocker's data
         JSONObject blockerData = fetch(blockerUsername);
         Set<String> blockerFriends = new HashSet<>();
         Set<String> blockerRequests = new HashSet<>();
@@ -185,6 +186,23 @@ public class DBFriendRequestDataAccessObject implements FriendRequestDataAccessI
         blockerRequests.remove(blockedUsername);
 
         save(blockerUsername, blockerFriends, blockerRequests, blockerBlocked);
+
+        // Update blocked user's data - remove blocker from their friends list
+        JSONObject blockedData = fetch(blockedUsername);
+        Set<String> blockedFriends = new HashSet<>();
+        Set<String> blockedRequests = new HashSet<>();
+        Set<String> blockedBlocked = new HashSet<>();
+
+        if (blockedData != null) {
+            blockedFriends = toSet(blockedData.getJSONArray("friends"));
+            blockedRequests = toSet(blockedData.getJSONArray("requests"));
+            blockedBlocked = toSet(blockedData.getJSONArray("blocked"));
+        }
+
+        blockedFriends.remove(blockerUsername);
+        blockedRequests.remove(blockerUsername);
+
+        save(blockedUsername, blockedFriends, blockedRequests, blockedBlocked);
     }
 
     @Override
