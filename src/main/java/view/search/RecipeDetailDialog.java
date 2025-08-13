@@ -105,6 +105,13 @@ public class RecipeDetailDialog extends JDialog {
         });
         bottomPanel.add(saveButton);
 
+        JButton unsaveButton = new JButton("Unsave Recipe");
+        unsaveButton.addActionListener(e -> {
+            saveController.unsave(username, result.getId());
+            JOptionPane.showMessageDialog(this, "Recipe unsaved successfully!");
+        });
+        bottomPanel.add(unsaveButton);
+
         JButton viewReviewsButton = new JButton("View Reviews");
         viewReviewsButton.addActionListener(e -> {
             showReviewsDialog(result.getId());
