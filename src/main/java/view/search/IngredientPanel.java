@@ -7,30 +7,51 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class IngredientPanel extends JPanel {
-    private JTextField includeField;
-    private JTextField excludeField;
+    private final JTextField includeField = new JTextField(28); // wider baseline
+    private final JTextField excludeField = new JTextField(28);
 
     public IngredientPanel() {
+        setOpaque(false);
         setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        gbc.gridx = 0; gbc.gridy = 0;
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 6, 4, 6);
+        gbc.gridy = 0;
+
+        // "Include" label
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         add(new JLabel("Include Ingredients (comma-separated):"), gbc);
 
+        // Include field (stretch)
         gbc.gridx = 1;
-        includeField = new JTextField(20);
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         add(includeField, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1;
+        // Next row
+        gbc.gridy++;
+
+        // "Exclude" label
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         add(new JLabel("Exclude Ingredients (comma-separated):"), gbc);
 
+        // Exclude field (stretch)
         gbc.gridx = 1;
-        excludeField = new JTextField(20);
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         add(excludeField, gbc);
     }
 
+    // If you want to tweak later from SearchView:
+    public void setTextFieldColumns(int cols) {
+        includeField.setColumns(cols);
+        excludeField.setColumns(cols);
+        revalidate();
+    }
     /**
      * Returns a list of included ingredients, split on commas and trimmed.
      */
