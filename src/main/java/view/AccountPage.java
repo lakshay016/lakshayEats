@@ -13,6 +13,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AccountPage extends JPanel implements PropertyChangeListener {
     private final PreferencesController controller;
@@ -188,27 +190,24 @@ public class AccountPage extends JPanel implements PropertyChangeListener {
         Preferences p = viewModel.getPreferences();
         if (p == null) return;
 
-        Map<String, Integer> dietsIn = p.getDiets() != null ? p.getDiets() : Map.of();
-        Map<String, Integer> intsIn  = p.getIntolerances() != null ? p.getIntolerances() : Map.of();
-
-        Map<String, Integer> diets = new HashMap<>();
-        for (var e : dietsIn.entrySet()) diets.put(norm(e.getKey()), e.getValue());
-
-        Map<String, Integer> ints = new HashMap<>();
-        for (var e : intsIn.entrySet()) ints.put(norm(e.getKey()), e.getValue());
+        // Normalize enabled names to lowercase so they match norm
+        Set<String> onDiets = p.enabledDiets().stream()
+                .map(AccountPage::norm)
+                .collect(Collectors.toSet());
+        Set<String> onInts = p.enabledIntolerances().stream()
+                .map(AccountPage::norm)
+                .collect(Collectors.toSet());
 
         for (JCheckBox cb : dietBoxes) {
-            Integer v = diets.get(norm(cb.getText()));
-            cb.setSelected(v != null && v != 0);
+            cb.setSelected(onDiets.contains(norm(cb.getText())));
         }
         for (JCheckBox cb : intoleranceBoxes) {
-            Integer v = ints.get(norm(cb.getText()));
-            cb.setSelected(v != null && v != 0);
+            cb.setSelected(onInts.contains(norm(cb.getText())));
         }
-
         revalidate();
         repaint();
     }
+
 
     private Map<String, Integer> getSelectedMap(JCheckBox[] boxes) {
         Map<String, Integer> map = new HashMap<>();

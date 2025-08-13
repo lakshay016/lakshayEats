@@ -74,23 +74,26 @@ public final class AppShellFactory {
         PreferencesController prefController = new PreferencesController(getInteractor, saveInteractor);
 
         // === PAGES ===
+
+        // Build Account first and hydrate prefs once so other views (e.g., SearchView) can use defaults.
+        var accountPage = new AccountPage(
+                prefController, prefVm, changePasswordController,
+                loggedInViewModel, currentUsername, viewManagerModel);
+
+        // Sets VM.username and triggers controller.loadPreferences(username)
+        accountPage.loadPreferencesForUser(currentUsername);
+
         var searchPage = new view.search.SearchView(
                 currentUsername,
                 saveController,
-                prefDao);
+                prefVm);
+
         var savedPage   = new view.SavedPage(currentUsername, saveController,
                 new DBRecipeDataAccessObject(),
                 new SpoonacularAPIClient(apiKey), saveVm);
         var feedPage    = new FeedPage();
         var friendsPage = new FriendsPage(currentUsername, dbUserDataAccessObject,
                 new DBFriendRequestDataAccessObject(dbUserDataAccessObject));
-        var accountPage = new AccountPage(prefController, prefVm, changePasswordController,
-                loggedInViewModel, currentUsername, viewManagerModel);
-        accountPage.loadPreferencesForUser(currentUsername);
-
-
-        // Load preferences immediately for the user
-        accountPage.loadPreferencesForUser(currentUsername);
 
         return new AppShell(searchPage, savedPage, feedPage, friendsPage, accountPage);
     }
