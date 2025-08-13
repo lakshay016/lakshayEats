@@ -93,7 +93,7 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         JLabel tomatoLabel = new JLabel("🍅🍔🍜🥦");
         tomatoLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 100));
         tomatoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        tomatoLabel.setBorder(new EmptyBorder(20, 0, 20, 0));
+        tomatoLabel.setBorder(new EmptyBorder(10, 0, 10, 0));
         JLabel bigTitle = new JLabel("LAKSHAY EATS");
         bigTitle.setFont(new Font("Comic Sans MS", Font.BOLD, 48));
         bigTitle.setForeground(new Color(34, 139, 34));

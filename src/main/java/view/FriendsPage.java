@@ -80,6 +80,7 @@ public class FriendsPage extends JPanel {
             }.execute();
         });
         fv.onBlockFriend(friendId -> {
+            System.out.println("Block friend handler called for: " + friendId);
             friendRequestController.blockUser(currentUser, friendId);
             refreshFriends(fv);
         });
@@ -88,6 +89,7 @@ public class FriendsPage extends JPanel {
             refreshFriends(fv);
         });
         fv.onRemoveFriend(friendId -> {
+            System.out.println("Remove friend handler called for: " + friendId);
             friendRequestController.removeFriend(currentUser, friendId);
             refreshFriends(fv);
         });
