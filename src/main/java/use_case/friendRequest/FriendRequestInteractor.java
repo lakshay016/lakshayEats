@@ -49,7 +49,15 @@ public class FriendRequestInteractor implements FriendRequestInputBoundary {
                         new FriendRequestOutputData(false, "Cannot send friend request to blocked user",
                                 requesterUsername, targetUsername)
                 );
-                return;}
+                return;
+            }
+            if (userDataAccess.isBlocked(targetUsername, requesterUsername)) {
+                outputBoundary.presentFriendRequestResult(
+                        new FriendRequestOutputData(false, "Cannot send friend request. Try again later.",
+                                requesterUsername, targetUsername)
+                );
+                return;
+            }
             if (userDataAccess.hasFriendRequest(requesterUsername, targetUsername)) {
                 outputBoundary.presentFriendRequestResult(
                         new FriendRequestOutputData(false, "Friend request already sent",
