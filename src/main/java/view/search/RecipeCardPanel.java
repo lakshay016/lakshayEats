@@ -5,7 +5,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import entity.SearchResult;
@@ -36,7 +38,7 @@ public class RecipeCardPanel extends JPanel {
         // --- Left: image (loaded async) ---
         imageLabel.setPreferredSize(new Dimension(100, 100));
         add(imageLabel, BorderLayout.WEST);
-        loadImageAsync();
+        loadImageAsync(result.getImage());
 
         // --- Center: info ---
         JPanel infoPanel = new JPanel(new GridLayout(0, 1));
@@ -69,25 +71,35 @@ public class RecipeCardPanel extends JPanel {
      * Loads the recipe image on a background thread,
      * then sets it on the imageLabel when done.
      */
-    private void loadImageAsync() {
-        final String imgUrl = result.getImage();
-        if (imgUrl == null || imgUrl.isBlank()) {
-            // optional: a placeholder
-            imageLabel.setText("No image");
-            imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    private void loadImageAsync(String urlString) {
+        // show text placeholder immediately
+        imageLabel.setText("No image available");
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imageLabel.setVerticalAlignment(SwingConstants.CENTER);
+        imageLabel.setPreferredSize(new Dimension(120, 90)); // keeps layout stable
+        imageLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        imageLabel.setIcon(null); // ensure no old image stays
+
+        // if there's no URL, just leave the placeholder
+        if (urlString == null || urlString.isBlank()) {
             return;
         }
 
         new SwingWorker<ImageIcon, Void>() {
             @Override
-            protected ImageIcon doInBackground() throws Exception {
-                URL url = new URL(imgUrl);
-                BufferedImage img = ImageIO.read(url);
-                if (img == null) return null;
-                Dimension preferredSize = imageLabel.getPreferredSize();
-                Image scaled = img.getScaledInstance(
-                        preferredSize.width, preferredSize.height, Image.SCALE_SMOOTH);
-                return new ImageIcon(scaled);
+            protected ImageIcon doInBackground() {
+                try {
+                    BufferedImage img = ImageIO.read(new URL(urlString));
+                    if (img == null) throw new IOException("ImageIO.read returned null");
+                    // scale image
+                    Image scaled = img.getScaledInstance(400, 300, Image.SCALE_SMOOTH);
+                    return new ImageIcon(scaled);
+                } catch (Exception e) {
+                    // Fail silently; placeholder stays
+                    Logger.getLogger(RecipeDetailDialog.class.getName())
+                            .log(Level.WARNING, "Failed to load image: {0}", e.toString());
+                    return null;
+                }
             }
 
             @Override
@@ -95,14 +107,14 @@ public class RecipeCardPanel extends JPanel {
                 try {
                     ImageIcon icon = get();
                     if (icon != null) {
-                        imageLabel.setText(null);
                         imageLabel.setIcon(icon);
+                        imageLabel.setText(null); // remove placeholder text
                     }
                 } catch (Exception e) {
-                    LOGGER.warning("Failed to load recipe image: " + e.getMessage());
-                    // keep placeholder if loading fails
+                    // If we can't get the image, we just keep the placeholder
                 }
             }
         }.execute();
     }
 }
+

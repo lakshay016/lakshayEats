@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 public class FilterDialog extends JDialog {
     private FilterOptions filterOptions;
+    private Preferences preferences;
+    private final String username;
 
     private static final String[] CUISINES = {
             "African", "Asian", "American", "British", "Cajun", "Caribbean", "Chinese",
@@ -51,13 +53,12 @@ public class FilterDialog extends JDialog {
     private JComboBox<String> sortCombo;
     private JComboBox<String> sortDirCombo;
 
-    private final PreferencesDataAccessInterface preferencesDAO;
-    private final String username;
 
-    public FilterDialog(JFrame parent, String username, PreferencesDataAccessInterface preferencesDAO) {
+
+    public FilterDialog(JFrame parent, String username, Preferences preferences) {
         super(parent, "Filter Options", true);
         this.username = username;
-        this.preferencesDAO = preferencesDAO;
+        this.preferences = preferences;
 
         setSize(600, 500);
         setLocationRelativeTo(parent);
@@ -154,30 +155,33 @@ public class FilterDialog extends JDialog {
         getContentPane().add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    private static String norm(String s) {
+        return s == null ? "" : s.trim().toLowerCase();
+    }
+
     private void loadUserPreferences() {
         try {
-            Preferences prefs = preferencesDAO.getPreferences(username);
+            if (preferences != null) {
+                // Build enabled-name sets, normalized
+                var enabledDiets = preferences.enabledDiets().stream()
+                        .map(FilterDialog::norm)
+                        .collect(java.util.stream.Collectors.toSet());
+                var enabledInts = preferences.enabledIntolerances().stream()
+                        .map(FilterDialog::norm)
+                        .collect(java.util.stream.Collectors.toSet());
 
-            if (prefs != null) {
                 // Diets
-                Map<String, Integer> diets = prefs.getDiets();
-                for (String diet : DIETS) {
-                    if (diets.getOrDefault(diet, 0) == 1) {
-                        JCheckBox cb = dietCheckboxes.get(diet);
-                        if (cb != null) cb.setSelected(true);
-                    }
+                for (String dietLabel : DIETS) {
+                    JCheckBox cb = dietCheckboxes.get(dietLabel);
+                    if (cb != null) cb.setSelected(enabledDiets.contains(norm(dietLabel)));
                 }
 
                 // Intolerances
-                Map<String, Integer> intolerances = prefs.getIntolerances();
-                for (String intolerance : INTOLERANCES) {
-                    if (intolerances.getOrDefault(intolerance, 0) == 1) {
-                        JCheckBox cb = intoleranceCheckboxes.get(intolerance);
-                        if (cb != null) cb.setSelected(true);
-                    }
+                for (String intLabel : INTOLERANCES) {
+                    JCheckBox cb = intoleranceCheckboxes.get(intLabel);
+                    if (cb != null) cb.setSelected(enabledInts.contains(norm(intLabel)));
                 }
             }
-
         } catch (Exception e) {
             System.err.println("Error loading preferences for " + username + ": " + e.getMessage());
             e.printStackTrace();

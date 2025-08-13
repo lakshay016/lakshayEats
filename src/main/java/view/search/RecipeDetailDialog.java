@@ -100,7 +100,6 @@ public class RecipeDetailDialog extends JDialog {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton saveButton = new JButton("Save Recipe");
         saveButton.addActionListener(e -> {
-            // Replace with real user if applicable
             saveController.save(username, result);
             JOptionPane.showMessageDialog(this, "Recipe saved successfully!");
         });
@@ -152,8 +151,10 @@ public class RecipeDetailDialog extends JDialog {
             JList<String> reviewList = new JList<>(reviewListModel);
             reviewList.setCellRenderer(new DefaultListCellRenderer() {
                 @Override
-                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                              boolean isSelected, boolean cellHasFocus) {
+                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value,
+                            index, isSelected, cellHasFocus);
                     label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
                     return label;
                 }
@@ -334,27 +335,47 @@ public class RecipeDetailDialog extends JDialog {
      * Loads an image from URL off the EDT and sets it scaled to the imageLabel.
      */
     private void loadImageAsync(String urlString) {
+        imageLabel.setText("No image available");
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imageLabel.setVerticalAlignment(SwingConstants.CENTER);
+        imageLabel.setPreferredSize(new Dimension(400, 300)); // keep layout stable
+        imageLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        imageLabel.setIcon(null);
+
+        if (urlString == null || urlString.isBlank()) {
+            return;
+        }
+
         new SwingWorker<ImageIcon, Void>() {
             @Override
-            protected ImageIcon doInBackground() throws Exception {
-                URL url = new URL(urlString);
-                BufferedImage img = ImageIO.read(url);
-                Image scaled = img.getScaledInstance(
-                        imageLabel.getPreferredSize().width,
-                        imageLabel.getPreferredSize().height,
-                        Image.SCALE_SMOOTH);
-                return new ImageIcon(scaled);
+            protected ImageIcon doInBackground() {
+                try {
+                    var url = new URL(urlString);
+                    var img = ImageIO.read(url);
+                    if (img == null) throw new java.io.IOException("ImageIO.read returned null");
+                    Image scaled = img.getScaledInstance(
+                            imageLabel.getPreferredSize().width,
+                            imageLabel.getPreferredSize().height,
+                            Image.SCALE_SMOOTH);
+                    return new ImageIcon(scaled);
+                } catch (Exception ex) {
+                    Logger.getLogger(RecipeDetailDialog.class.getName())
+                            .log(Level.WARNING, "Failed to load image: {0}", ex.toString());
+                    return null;
+                }
             }
+
             @Override
             protected void done() {
                 try {
-                    imageLabel.setIcon(get());
-                } catch (Exception e) {
-                    Logger.getLogger(RecipeDetailDialog.class.getName()).log(Level.SEVERE, "Failed to load image", e);
-                    imageLabel.setIcon(new ImageIcon(new BufferedImage(
-                            imageLabel.getPreferredSize().width,
-                            imageLabel.getPreferredSize().height,
-                            BufferedImage.TYPE_INT_ARGB)));
+                    ImageIcon icon = get();
+                    if (icon != null) {
+                        imageLabel.setIcon(icon);
+                        imageLabel.setText(null);
+                        imageLabel.setBorder(null);
+                    }
+                } catch (Exception ignored) {
+                    // keep placeholder
                 }
             }
         }.execute();
