@@ -107,29 +107,6 @@ public class DBRecipeDataAccessObject implements SaveDataAccessInterface{
         return recipes;
     }
 
-    @Override
-    public boolean unsave(String userId, int recipeId) {
-        try {
-            String urlStr = supabaseUrl + "/rest/v1/" + tableName1 +
-                    "?userid=eq." + userId +
-                    "&recipeid=eq." + recipeId;
-
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("DELETE");
-            conn.setRequestProperty("apikey", apiKey);
-            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
-
-            int responseCode = conn.getResponseCode();
-            return responseCode == 204; // Success
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public void saveSharedRecipe(String sender, String receiver, Recipe recipe) {
         try {
             URL url = new URL(supabaseUrl + "/rest/v1/" + tableName);
