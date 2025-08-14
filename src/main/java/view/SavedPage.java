@@ -6,7 +6,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import data_access.DBRecipeDataAccessObject;
 import data_access.SpoonacularAPIClient;
@@ -22,6 +24,9 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
     private final DBRecipeDataAccessObject dao;
     private final SaveController saveController;
     private final SaveViewModel saveViewModel;
+
+    private List<SearchResult> cachedRecipes = null;
+    private boolean needsRefresh = true;
 
     public SavedPage(String userId,
                      SaveController saveController,
@@ -47,23 +52,93 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
         fetchAndDisplaySavedRecipes();
     }
 
-    public void reload() {
-        fetchAndDisplaySavedRecipes();
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ("saveState".equals(evt.getPropertyName())) {
-            SwingUtilities.invokeLater(this::reload);
+            //only fetch missing recipes
+            updateCacheWithMissingRecipes();
         }
     }
 
+    private void updateCacheWithMissingRecipes() {
+        try {
+            // Get current saved recipe IDs from database
+
+            var savedRecipeIds = dao.fetchSavedRecipes(userId);
+
+            if (cachedRecipes != null) {
+                cachedRecipes.removeIf(recipe ->
+                        !savedRecipeIds.contains(recipe.getId()));
+            }
+
+            if (savedRecipeIds == null || savedRecipeIds.isEmpty()) {
+                cachedRecipes = new ArrayList<>();
+                displayResults(cachedRecipes);
+                return;
+            }
+
+            // Find which recipes are missing from cache
+            List<Integer> missingRecipeIds = findMissingRecipeIds(savedRecipeIds);
+
+            if (missingRecipeIds.isEmpty()) {
+                // All recipes are in cache, just update display
+                displayResults(cachedRecipes);
+            } else {
+                // Only fetch the missing recipes
+                List<SearchResult> newRecipes = new ArrayList<>();
+                for(Integer id : missingRecipeIds) {
+                    SearchResult r = fetchRecipeById(id);
+                    if (r != null) newRecipes.add(r);
+                }
+
+                // Add new recipes to existing cache
+                if (cachedRecipes == null) {
+                    cachedRecipes = new ArrayList<>();
+                }
+                cachedRecipes.addAll(newRecipes);
+
+                // Update display with updated cache
+                displayResults(cachedRecipes);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<Integer> findMissingRecipeIds(List<Integer> allSavedIds) {
+        List<Integer> missingIds = new ArrayList<>();
+
+        if (cachedRecipes == null) {
+            // No cache, need to fetch everything
+            return allSavedIds;
+        }
+
+        for (Integer savedId : allSavedIds) {
+            boolean existsInCache = cachedRecipes.stream()
+                    .anyMatch(recipe -> recipe.getId() == savedId);
+
+            if (!existsInCache) {
+                missingIds.add(savedId);
+            }
+        }
+
+        return missingIds;
+    }
+
+
     private void fetchAndDisplaySavedRecipes() {
+        if (cachedRecipes != null && !needsRefresh) {
+            displayResults(cachedRecipes);
+            return;
+        }
         SwingWorker<List<SearchResult>, Void> worker = new SwingWorker<>() {
             @Override
             protected List<SearchResult> doInBackground() throws Exception {
                 List<SearchResult> recipes = new ArrayList<>();
-                var savedRecipeIds = dao.fetchSavedRecipes(userId); // List<Integer>
+                var savedRecipeId = dao.fetchSavedRecipes(userId); // List<Integer>
+                Set<Integer> noDupes = new HashSet<>(savedRecipeId);
+                var savedRecipeIds = noDupes;
                 if (savedRecipeIds == null || savedRecipeIds.isEmpty()) {
                     return recipes;
                 }
@@ -77,7 +152,10 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
             @Override
             protected void done() {
                 try {
-                    displayResults(get()); // <-- factorized rendering
+                    List<SearchResult> recipes = get();
+                    cachedRecipes = recipes; // Cache the results
+                    needsRefresh = false;    // Mark as fresh
+                    displayResults(recipes);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(SavedPage.this,

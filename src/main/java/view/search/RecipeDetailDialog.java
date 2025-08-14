@@ -100,10 +100,18 @@ public class RecipeDetailDialog extends JDialog {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton saveButton = new JButton("Save Recipe");
         saveButton.addActionListener(e -> {
+
             saveController.save(username, result);
             JOptionPane.showMessageDialog(this, "Recipe saved successfully!");
         });
         bottomPanel.add(saveButton);
+
+        JButton unsaveButton = new JButton("Unsave Recipe");
+        unsaveButton.addActionListener(e -> {
+            saveController.unsave(username, result.getId());
+            JOptionPane.showMessageDialog(this, "Recipe unsaved successfully!");
+        });
+        bottomPanel.add(unsaveButton);
 
         JButton viewReviewsButton = new JButton("View Reviews");
         viewReviewsButton.addActionListener(e -> {

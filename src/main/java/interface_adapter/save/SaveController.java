@@ -14,7 +14,13 @@ public class SaveController {
     }
 
     public void save(String userId, SearchResult recipe) {
+
         SaveInputData inputData = new SaveInputData(userId, recipe);
+        interactor.execute(inputData);
+    }
+
+    public void unsave(String userId, int recipeId) {
+        SaveInputData inputData = new SaveInputData(userId, recipeId, true);
         interactor.execute(inputData);
     }
 }
