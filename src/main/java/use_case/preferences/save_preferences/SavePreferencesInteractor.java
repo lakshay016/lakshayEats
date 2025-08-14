@@ -1,6 +1,5 @@
 package use_case.preferences.save_preferences;
 
-import entity.Preferences;
 import use_case.preferences.PreferencesDataAccessInterface;
 
 public class SavePreferencesInteractor implements SavePreferencesInputBoundary {
