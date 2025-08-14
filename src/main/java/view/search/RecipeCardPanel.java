@@ -14,8 +14,6 @@ import entity.SearchResult;
 import interface_adapter.save.SaveController;
 
 public class RecipeCardPanel extends JPanel {
-//    private static final Logger LOGGER = Logger.getLogger(RecipeCardPanel.class.getName());
-
     private final SearchResult result;
     private final JLabel imageLabel = new JLabel();
     private final SaveController saveController; // nullable
