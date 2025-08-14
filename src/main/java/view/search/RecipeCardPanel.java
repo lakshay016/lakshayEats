@@ -123,8 +123,6 @@ public class RecipeCardPanel extends JPanel {
 
         final int boxW = 120, boxH = 90;
 
-        final int boxW = 120, boxH = 90;
-
 
         new SwingWorker<ImageIcon, Void>() {
             @Override
