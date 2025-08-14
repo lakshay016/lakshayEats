@@ -14,8 +14,8 @@ public class GetPreferencesInteractor implements GetPreferencesInputBoundary {
     }
 
     @Override
-    public void execute(String username) {
-        Preferences prefs = preferencesDAO.getPreferences(username);
+    public void execute(GetPreferencesInputData inputData) {
+        Preferences prefs = preferencesDAO.getPreferences(inputData.getUsername());
         presenter.presentPreferences(prefs);
     }
 }
