@@ -210,10 +210,4 @@ public class ReviewView extends JFrame {
         mockReviews.add(new Review(67890, 9, "Charlie", "Absolutely love this recipe! Will make it again.", LocalDateTime.now().minusHours(5)));
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            ReviewView reviewView = new ReviewView();
-            reviewView.setVisible(true);
-        });
-    }
 }
