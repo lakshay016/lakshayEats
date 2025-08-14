@@ -3,8 +3,8 @@ package use_case.save;
 import entity.SearchResult;
 
 public class SaveInteractor implements SaveInputBoundary {
-    private SaveDataAccessInterface saveDataAccessInterface;
-    private SaveOutputBoundary saveOutputBoundary;
+    private final SaveDataAccessInterface saveDataAccessInterface;
+    private final SaveOutputBoundary saveOutputBoundary;
     public SaveInteractor(SaveDataAccessInterface saveDataAccessInterface, SaveOutputBoundary saveOutputBoundary) {
         this.saveDataAccessInterface = saveDataAccessInterface;
         this.saveOutputBoundary = saveOutputBoundary;
