@@ -14,7 +14,7 @@ import entity.SearchResult;
 import interface_adapter.save.SaveController;
 
 public class RecipeCardPanel extends JPanel {
-    private static final Logger LOGGER = Logger.getLogger(RecipeCardPanel.class.getName());
+//    private static final Logger LOGGER = Logger.getLogger(RecipeCardPanel.class.getName());
 
     private final SearchResult result;
     private final JLabel imageLabel = new JLabel();
@@ -71,19 +71,22 @@ public class RecipeCardPanel extends JPanel {
      * Loads the recipe image on a background thread,
      * then sets it on the imageLabel when done.
      */
+
     private void loadImageAsync(String urlString) {
         // show text placeholder immediately
         imageLabel.setText("No image available");
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imageLabel.setVerticalAlignment(SwingConstants.CENTER);
-        imageLabel.setPreferredSize(new Dimension(120, 90)); // keeps layout stable
+        imageLabel.setPreferredSize(new Dimension(120, 90));
         imageLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-        imageLabel.setIcon(null); // ensure no old image stays
+        imageLabel.setIcon(null);
 
         // if there's no URL, just leave the placeholder
         if (urlString == null || urlString.isBlank()) {
             return;
         }
+
+        final int boxW = 120, boxH = 90;
 
         new SwingWorker<ImageIcon, Void>() {
             @Override
@@ -92,7 +95,7 @@ public class RecipeCardPanel extends JPanel {
                     BufferedImage img = ImageIO.read(new URL(urlString));
                     if (img == null) throw new IOException("ImageIO.read returned null");
                     // scale image
-                    Image scaled = img.getScaledInstance(400, 300, Image.SCALE_SMOOTH);
+                    Image scaled = img.getScaledInstance(boxW, boxH, Image.SCALE_SMOOTH);
                     return new ImageIcon(scaled);
                 } catch (Exception e) {
                     // Fail silently; placeholder stays
