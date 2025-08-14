@@ -15,7 +15,7 @@ import interface_adapter.FriendRequest.FriendRequestController;
 import interface_adapter.save.SaveController;
 
 public class RecipeCardPanel extends JPanel {
-    private static final Logger LOGGER = Logger.getLogger(RecipeCardPanel.class.getName());
+   // private static final Logger LOGGER = Logger.getLogger(RecipeCardPanel.class.getName());
 
     private final SearchResult result;
     private final JLabel imageLabel = new JLabel();
@@ -121,7 +121,7 @@ public class RecipeCardPanel extends JPanel {
         if (urlString == null || urlString.isBlank()) {
             return;
         }
-
+        final int boxW = 120, boxH = 90;
         new SwingWorker<ImageIcon, Void>() {
             @Override
             protected ImageIcon doInBackground() {
@@ -129,7 +129,7 @@ public class RecipeCardPanel extends JPanel {
                     BufferedImage img = ImageIO.read(new URL(urlString));
                     if (img == null) throw new IOException("ImageIO.read returned null");
                     // scale image
-                    Image scaled = img.getScaledInstance(400, 300, Image.SCALE_SMOOTH);
+                    Image scaled = img.getScaledInstance(boxW, boxH, Image.SCALE_SMOOTH);
                     return new ImageIcon(scaled);
                 } catch (Exception e) {
                     // Fail silently; placeholder stays
