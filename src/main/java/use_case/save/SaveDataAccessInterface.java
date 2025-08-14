@@ -4,4 +4,5 @@ import entity.SearchResult;
 
 public interface SaveDataAccessInterface {
     boolean save(String username, SearchResult recipe);
+    boolean unsave(String username, int recipeId);
 }

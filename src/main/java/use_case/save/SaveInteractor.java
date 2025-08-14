@@ -11,13 +11,23 @@ public class SaveInteractor implements SaveInputBoundary {
     }
 
     public void execute(SaveInputData inputData) {
-        SearchResult recipe = inputData.getRecipe();
-        boolean success = saveDataAccessInterface.save(inputData.getUsername(), recipe);
-        if (success) {
+        if (inputData.isUnsave()) {
+            boolean success = saveDataAccessInterface.unsave(inputData.getUsername(), inputData.getRecipeId());
+            if (success) {
+                SaveOutputData outputData = new SaveOutputData("Recipe unsaved successfully", null);
+                saveOutputBoundary.prepareSuccessView(outputData);
+            } else {
+                saveOutputBoundary.prepareErrorView("Failed to unsave recipe");
+            }
+        } else {
+            SearchResult recipe = inputData.getRecipe();
+            boolean success = saveDataAccessInterface.save(inputData.getUsername(), recipe);
+            if (success) {
             SaveOutputData outputBoundary = new SaveOutputData("Recipe saved successfully.", recipe);
             saveOutputBoundary.prepareSuccessView(outputBoundary);
-        } else {
-            saveOutputBoundary.prepareErrorView("Failed to save recipe.");
+            } else {
+                saveOutputBoundary.prepareErrorView("Failed to save recipe.");
+            }
         }
     }
 }
