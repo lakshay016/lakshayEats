@@ -10,11 +10,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import data_access.DBFriendRequestDataAccessObject;
 import data_access.DBRecipeDataAccessObject;
+import data_access.DBUserDataAccessObject;
 import data_access.SpoonacularAPIClient;
+import entity.CommonUserFactory;
 import entity.SearchResult;
+import interface_adapter.FriendRequest.FriendRequestController;
 import interface_adapter.save.SaveController;
 import interface_adapter.save.SaveViewModel;
+import use_case.friendRequest.FriendRequestInteractor;
+import use_case.friendRequest.FriendRequestOutputBoundary;
+import use_case.friendRequest.FriendRequestOutputData;
 import view.search.RecipeCardPanel;
 
 public class SavedPage extends JPanel implements PropertyChangeListener {
@@ -24,6 +31,7 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
     private final DBRecipeDataAccessObject dao;
     private final SaveController saveController;
     private final SaveViewModel saveViewModel;
+    private final FriendRequestController friendRequestController;
 
     private List<SearchResult> cachedRecipes = null;
     private boolean needsRefresh = true;
@@ -38,6 +46,22 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
         this.client = client;
         this.saveViewModel = saveViewModel;
         this.saveViewModel.addPropertyChangeListener(this);
+
+        // Create FriendRequestController directly here (no need to modify AppShellFactory)
+        DBFriendRequestDataAccessObject friendRequestDao = new DBFriendRequestDataAccessObject(
+                new DBUserDataAccessObject(new CommonUserFactory()));
+
+        // Simple output boundary that just handles recipe sharing
+        FriendRequestOutputBoundary simplePresenter = new FriendRequestOutputBoundary() {
+            @Override
+            public void presentFriendRequestResult(FriendRequestOutputData outputData) {
+                // Recipe shared successfully - no need to show popup
+                // The RecipeDetailDialog will show its own success message
+            }
+        };
+
+        FriendRequestInteractor interactor = new FriendRequestInteractor(simplePresenter, friendRequestDao);
+        this.friendRequestController = new FriendRequestController(interactor);
 
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
@@ -186,7 +210,7 @@ public class SavedPage extends JPanel implements PropertyChangeListener {
             resultsPanel.add(noResults);
         } else {
             for (SearchResult r : recipes) {
-                RecipeCardPanel card = new RecipeCardPanel(r, saveController, userId);
+                RecipeCardPanel card = new RecipeCardPanel(r, saveController, friendRequestController, userId);
                 card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
                 card.setPreferredSize(new Dimension(700, 120));
                 resultsPanel.add(card);

@@ -4,9 +4,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+import data_access.DBFriendRequestDataAccessObject;
+import data_access.DBUserDataAccessObject;
+import entity.CommonUserFactory;
 import entity.FilterOptions;
 import entity.SearchResult;
 import entity.Preferences;
+import interface_adapter.FriendRequest.FriendRequestController;
 import interface_adapter.save.SaveController;
 import interface_adapter.search.SearchController;
 import interface_adapter.search.SearchViewModel;
@@ -14,6 +18,9 @@ import interface_adapter.search.SearchPresenter;
 import interface_adapter.preferences.PreferencesViewModel;
 import javax.swing.SwingUtilities;
 
+import use_case.friendRequest.FriendRequestInteractor;
+import use_case.friendRequest.FriendRequestOutputBoundary;
+import use_case.friendRequest.FriendRequestOutputData;
 import use_case.search.SearchInteractor;
 import data_access.SpoonacularAPIClient;
 
@@ -38,6 +45,7 @@ public class SearchView extends JPanel {
     private final JPanel resultsPanel = new JPanel();
     private final String currentUsername;
     private final PreferencesViewModel prefVm;
+    private final FriendRequestController friendRequestController;
 
     public SearchView(String currentUsername,
                       SaveController saveController,
@@ -45,7 +53,26 @@ public class SearchView extends JPanel {
         this.currentUsername = currentUsername;
         this.saveController = saveController;
         this.prefVm = prefVm;
+        // Create FriendRequestController directly here
+        DBFriendRequestDataAccessObject friendRequestDao = new DBFriendRequestDataAccessObject(
+                new DBUserDataAccessObject(new CommonUserFactory()));
 
+        // Simple output boundary that just shows success/error messages
+        FriendRequestOutputBoundary simplePresenter = new FriendRequestOutputBoundary() {
+            @Override
+            public void presentFriendRequestResult(FriendRequestOutputData outputData) {
+                if (outputData.isSuccess()) {
+                    // Recipe shared successfully - no need to show popup
+                } else {
+                    // Show error if something goes wrong
+                    JOptionPane.showMessageDialog(SearchView.this,
+                            outputData.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+
+        FriendRequestInteractor interactor2 = new FriendRequestInteractor(simplePresenter, friendRequestDao);
+        this.friendRequestController = new FriendRequestController(interactor2);
         // Load API key
         String apiKey = System.getenv("SPOONACULAR_API_KEY");
         if (apiKey == null) {
@@ -189,7 +216,7 @@ public class SearchView extends JPanel {
             for (SearchResult r : results) {
                 // ⚠️ use the save-enabled constructor so detail dialog shows Save/Reviews
                 RecipeCardPanel card = (saveController != null && currentUsername != null)
-                        ? new RecipeCardPanel(r, saveController, currentUsername)
+                        ? new RecipeCardPanel(r, saveController, friendRequestController, currentUsername)
                         : new RecipeCardPanel(r);
 
                 card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));

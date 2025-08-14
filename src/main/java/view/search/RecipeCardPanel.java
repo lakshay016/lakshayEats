@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import entity.SearchResult;
+import interface_adapter.FriendRequest.FriendRequestController;
 import interface_adapter.save.SaveController;
 
 public class RecipeCardPanel extends JPanel {
@@ -20,10 +21,12 @@ public class RecipeCardPanel extends JPanel {
     private final JLabel imageLabel = new JLabel();
     private final SaveController saveController; // nullable
     private final String username;               // nullable
+    private final FriendRequestController friendRequestController; // Add this
+
 
     // Used by SearchView (no save controller / username)
     public RecipeCardPanel(SearchResult result) {
-        this(result, null, null);
+        this(result, null, null, null);
     }
 
     // Used by SavedPage (has save controller and username)
@@ -31,6 +34,7 @@ public class RecipeCardPanel extends JPanel {
         this.result = result;
         this.saveController = saveController;
         this.username = username;
+        this.friendRequestController = null;
 
         setLayout(new BorderLayout(8, 8));
         setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
@@ -58,10 +62,43 @@ public class RecipeCardPanel extends JPanel {
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
+    public RecipeCardPanel(SearchResult result, SaveController saveController,
+                           FriendRequestController friendRequestController, String username) {
+        this.result = result;
+        this.saveController = saveController;
+        this.friendRequestController = friendRequestController;
+        this.username = username;
+
+        setLayout(new BorderLayout(8, 8));
+        setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+
+        // --- Left: image (loaded async) ---
+        imageLabel.setPreferredSize(new Dimension(100, 100));
+        add(imageLabel, BorderLayout.WEST);
+        loadImageAsync(result.getImage());
+
+        // --- Center: info ---
+        JPanel infoPanel = new JPanel(new GridLayout(0, 1));
+        JLabel titleLabel = new JLabel(result.getTitle());
+        titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+        infoPanel.add(titleLabel);
+        infoPanel.add(new JLabel("Ready in: " + result.getReadyInMinutes() + " mins"));
+        add(infoPanel, BorderLayout.CENTER);
+
+        // --- Interaction: open details (don't hide parent) ---
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                openDetails();
+            }
+        });
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }
+
     private void openDetails() {
         Window owner = SwingUtilities.getWindowAncestor(this);
         if (saveController != null && username != null) {
-            new RecipeDetailDialog(owner, result, saveController, username).setVisible(true);
+            new RecipeDetailDialog(owner, result, saveController, username, friendRequestController).setVisible(true);
         } else {
             new RecipeDetailDialog(owner, result).setVisible(true);
         }

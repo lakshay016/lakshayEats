@@ -7,16 +7,23 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import data_access.DBFriendRequestDataAccessObject;
-import data_access.DBMessageDataAccessObject;
-import data_access.DBUserDataAccessObject;
+import data_access.*;
+import entity.SearchResult;
 import interface_adapter.FriendRequest.FriendRequestController;
+import interface_adapter.save.SaveController;
+import interface_adapter.save.SavePresenter;
+import interface_adapter.save.SaveViewModel;
 import use_case.friendRequest.FriendRequestInteractor;
 import use_case.friendRequest.FriendRequestOutputBoundary;
 import use_case.friendRequest.FriendRequestOutputData;
+import use_case.save.SaveDataAccessInterface;
+import use_case.save.SaveInteractor;
+import view.search.RecipeDetailDialog;
 
 public class FriendsPage extends JPanel {
     private final String currentUser;
+    private final SpoonacularAPIClient apiClient;
+    private final SaveController saveController;
     private DBFriendRequestDataAccessObject friendDAO;
     private final DBMessageDataAccessObject messageDAO = new DBMessageDataAccessObject();
     private final DBUserDataAccessObject userDataAccessObject;
@@ -26,6 +33,19 @@ public class FriendsPage extends JPanel {
         this.currentUser = currentUser;
         this.userDataAccessObject = userDataAccessObject;
         this.friendDAO = new DBFriendRequestDataAccessObject(userDataAccessObject);
+
+        // Initialize API client and save controller
+        String apiKey = System.getenv("SPOONACULAR_API_KEY");
+        if (apiKey == null) {
+            throw new RuntimeException("Missing SPOONACULAR_API_KEY");
+        }
+        this.apiClient = new SpoonacularAPIClient(apiKey);
+
+        // Setup save controller for recipe interactions
+        SaveViewModel saveVm = new SaveViewModel();
+        SaveDataAccessInterface saveDao = new DBRecipeDataAccessObject();
+        SavePresenter savePresenter = new SavePresenter(saveVm);
+        this.saveController = new SaveController(new SaveInteractor(saveDao, savePresenter));
         setLayout(new BorderLayout());
 
         FriendsView fv = new FriendsView();
@@ -71,6 +91,12 @@ public class FriendsPage extends JPanel {
             }.execute();
         });
 
+        // Add recipe opening handler
+        fv.onOpenRecipe(recipeId -> {
+            openRecipe(recipeId, fv);
+        });
+
+
         fv.onSendMessage((friendId, text) -> {
             new SwingWorker<Void, Void>() {
                 @Override protected Void doInBackground() {
@@ -110,6 +136,43 @@ public class FriendsPage extends JPanel {
         });
         refreshFriends(fv);
 
+    }
+
+    private void openRecipe(int recipeId, FriendsView fv) {
+        new SwingWorker<SearchResult, Void>() {
+            @Override
+            protected SearchResult doInBackground() throws Exception {
+                // Load recipe details from Spoonacular API
+                List<Integer> recipeIds = new ArrayList<>();
+                recipeIds.add(recipeId);
+                List<SearchResult> recipes = apiClient.loadIDs(recipeIds);
+                return recipes.isEmpty() ? null : recipes.get(0);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    SearchResult recipe = get();
+                    if (recipe != null) {
+                        // Open recipe detail dialog
+                        SwingUtilities.invokeLater(() -> {
+                            Window owner = SwingUtilities.getWindowAncestor(FriendsPage.this);
+                            RecipeDetailDialog dialog = new RecipeDetailDialog(
+                                    owner, recipe, saveController, currentUser, null);
+                            dialog.setVisible(true);
+                        });
+                    } else {
+                        JOptionPane.showMessageDialog(FriendsPage.this,
+                                "Could not load recipe details. The recipe may have been removed from Spoonacular.",
+                                "Recipe Not Found", JOptionPane.WARNING_MESSAGE);}
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(FriendsPage.this,
+                            "Error loading recipe: " + e.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }.execute();
     }
 
     private void refreshFriends(FriendsView fv) {
