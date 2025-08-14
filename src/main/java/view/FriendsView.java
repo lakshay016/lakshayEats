@@ -2,10 +2,14 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FriendsView extends JPanel {
 
@@ -41,11 +45,44 @@ public class FriendsView extends JPanel {
     private final List<String> blockedUsers = new ArrayList<>();
     private String selectedFriendId = null;
 
+    private Consumer<Integer> openRecipeHandler = recipeId -> {};
+    private final Pattern recipePattern = Pattern.compile("RECIPE: .+? \\(ID: (\\d+)\\)");
+
     public FriendsView() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel leftPanel = new JPanel(new BorderLayout(5, 5));
+
+        // Set custom cell renderer for recipe messages
+        messagesList.setCellRenderer(new RecipeMessageCellRenderer());
+
+        // Add click handling for recipe messages
+        messagesList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) { // Double click to open recipe
+                    int index = messagesList.locationToIndex(e.getPoint());
+                    if (index >= 0) {
+                        String message = messagesModel.getElementAt(index);
+                        handleRecipeMessageClick(message);
+                    }
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                int index = messagesList.locationToIndex(e.getPoint());
+                if (index >= 0) {
+                    String message = messagesModel.getElementAt(index);
+                    if (isRecipeMessage(message)) {
+                        messagesList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    } else {
+                        messagesList.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    }
+                }
+            }
+        });
 
         // Friends section
         friendsListPanel.setLayout(new BoxLayout(friendsListPanel, BoxLayout.Y_AXIS));
@@ -108,6 +145,63 @@ public class FriendsView extends JPanel {
                 usernameField.setText("");
             }
         });
+    }
+
+    // Custom cell renderer to style recipe messages differently
+    private class RecipeMessageCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                      boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            String message = (String) value;
+            if (isRecipeMessage(message)) {
+                setText("<html><b>" + message + "</b> 🍳</html>");
+                setForeground(new Color(0, 100, 0)); // Dark green for recipe messages
+                if (isSelected) {
+                    setBackground(new Color(200, 255, 200)); // Light green when selected
+                }
+            } else {
+                setText(message);
+                setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+                setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+            }
+
+            return this;
+        }
+    }
+
+    // Check if a message is a recipe message
+    private boolean isRecipeMessage(String message) {
+        return message != null && message.contains("RECIPE:") && message.contains("(ID:");
+    }
+
+    // Extract recipe ID from recipe message
+    private Integer extractRecipeId(String message) {
+        if (!isRecipeMessage(message)) return null;
+
+        Matcher matcher = recipePattern.matcher(message);
+        if (matcher.find()) {
+            try {
+                return Integer.parseInt(matcher.group(1));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    // Handle click on recipe message
+    private void handleRecipeMessageClick(String message) {
+        Integer recipeId = extractRecipeId(message);
+        if (recipeId != null) {
+            openRecipeHandler.accept(recipeId);
+        }
+    }
+
+    // Add handler for opening recipes
+    public void onOpenRecipe(Consumer<Integer> handler) {
+        this.openRecipeHandler = handler != null ? handler : recipeId -> {};
     }
 
     public void showFriendRequestPopup(String requesterUsername) {

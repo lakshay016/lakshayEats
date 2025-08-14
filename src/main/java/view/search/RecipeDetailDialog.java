@@ -6,13 +6,19 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
 
+import data_access.DBFriendRequestDataAccessObject;
 import data_access.DBReviewDataAccessObject;
+import data_access.DBUserDataAccessObject;
 import entity.*;
+import interface_adapter.FriendRequest.FriendRequestController;
 import interface_adapter.save.SaveController;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Dialog showing full recipe details.
@@ -21,18 +27,20 @@ public class RecipeDetailDialog extends JDialog {
     private final JLabel imageLabel;
     private final String username;
     private final SearchResult result;
+    private final FriendRequestController friendRequestController;
 
 
-
-    public RecipeDetailDialog(Window parent, SearchResult result, SaveController saveController, String username) {
+    public RecipeDetailDialog(Window parent, SearchResult result, SaveController saveController, String username,
+                              FriendRequestController friendRequestController) {
         super(parent, "Recipe Details", ModalityType.APPLICATION_MODAL);
         this.result = result;
         this.username = username;
+        this.friendRequestController = friendRequestController;
         setSize(600, 700);
         setLocationRelativeTo(parent);
 
         // Top panel: back button and title
-        JPanel topPanel = new JPanel(new BorderLayout(5,5));
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
         JButton backButton = new JButton("← Back");
         backButton.addActionListener(e -> {
             // Get the owner window (SearchFrame) and show it
@@ -90,11 +98,11 @@ public class RecipeDetailDialog extends JDialog {
         tabs.addTab("Nutrition", new JScrollPane(nutritionArea));
 
         // Layout content: image at top of center, tabs below
-        JPanel centerPanel = new JPanel(new BorderLayout(10,10));
+        JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
         centerPanel.add(imageLabel, BorderLayout.NORTH);
         centerPanel.add(tabs, BorderLayout.CENTER);
 
-        getContentPane().setLayout(new BorderLayout(10,10));
+        getContentPane().setLayout(new BorderLayout(10, 10));
         getContentPane().add(topPanel, BorderLayout.NORTH);
         getContentPane().add(centerPanel, BorderLayout.CENTER);
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -105,6 +113,10 @@ public class RecipeDetailDialog extends JDialog {
             JOptionPane.showMessageDialog(this, "Recipe saved successfully!");
         });
         bottomPanel.add(saveButton);
+
+        JButton shareButton = new JButton("Share Recipe");
+        shareButton.addActionListener(e -> showShareRecipeDialog());
+        bottomPanel.add(shareButton);
 
         JButton unsaveButton = new JButton("Unsave Recipe");
         unsaveButton.addActionListener(e -> {
@@ -182,14 +194,16 @@ public class RecipeDetailDialog extends JDialog {
         reviewsDialog.add(mainPanel);
         reviewsDialog.setVisible(true);
     }
+
     public RecipeDetailDialog(Window parent, SearchResult result) {
-        
         super(parent, "Recipe Details", ModalityType.APPLICATION_MODAL);
+        this.friendRequestController = null;
+
         setSize(600, 700);
         setLocationRelativeTo(parent);
 
         // Top panel: back button and title
-        JPanel topPanel = new JPanel(new BorderLayout(5,5));
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
         JButton backButton = new JButton("← Back");
         backButton.addActionListener(e -> {
             // Get the owner window (SearchFrame) and show it
@@ -247,11 +261,11 @@ public class RecipeDetailDialog extends JDialog {
         tabs.addTab("Nutrition", new JScrollPane(nutritionArea));
 
         // Layout content: image at top of center, tabs below
-        JPanel centerPanel = new JPanel(new BorderLayout(10,10));
+        JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
         centerPanel.add(imageLabel, BorderLayout.NORTH);
         centerPanel.add(tabs, BorderLayout.CENTER);
 
-        getContentPane().setLayout(new BorderLayout(10,10));
+        getContentPane().setLayout(new BorderLayout(10, 10));
         getContentPane().add(topPanel, BorderLayout.NORTH);
         getContentPane().add(centerPanel, BorderLayout.CENTER);
 
@@ -339,9 +353,99 @@ public class RecipeDetailDialog extends JDialog {
         createReviewDialog.setVisible(true);
     }
 
-    /**
-     * Loads an image from URL off the EDT and sets it scaled to the imageLabel.
-     */
+    private void showShareRecipeDialog() {
+        if (friendRequestController == null) return;
+
+        // Get list of friends using a simpler approach
+        List<String> friends = getFriendsList();
+
+        if (friends.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "You don't have any friends yet. Add some friends first!",
+                    "No Friends", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        // Create share dialog
+        JDialog shareDialog = new JDialog(this, "Share Recipe with Friend", true);
+        shareDialog.setSize(400, 300);
+        shareDialog.setLocationRelativeTo(this);
+
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JLabel instructionLabel = new JLabel("Select a friend to share this recipe with:", SwingConstants.CENTER);
+        mainPanel.add(instructionLabel, BorderLayout.NORTH);
+
+        DefaultListModel<String> friendsListModel = new DefaultListModel<>();
+        for (String friend : friends) {
+            friendsListModel.addElement(friend);
+        }
+
+        JList<String> friendsList = new JList<>(friendsListModel);
+        friendsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane scrollPane = new JScrollPane(friendsList);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton shareButton = new JButton("Share");
+        JButton cancelButton = new JButton("Cancel");
+
+        shareButton.addActionListener(e -> {
+            String selectedFriend = friendsList.getSelectedValue();
+            if (selectedFriend != null) {
+                // Create a Recipe object from SearchResult
+                Recipe recipe = new Recipe();
+                recipe.id = result.getId();
+                recipe.name = result.getTitle();
+
+                // Share the recipe
+                friendRequestController.sendRecipe(username, selectedFriend, recipe);
+                JOptionPane.showMessageDialog(shareDialog,
+                        "Recipe shared successfully with " + selectedFriend + "!",
+                        "Success", JOptionPane.INFORMATION_MESSAGE);
+                shareDialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(shareDialog,
+                        "Please select a friend to share with.",
+                        "No Selection", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        cancelButton.addActionListener(e -> shareDialog.dispose());
+
+        buttonPanel.add(shareButton);
+        buttonPanel.add(cancelButton);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        shareDialog.add(mainPanel);
+        shareDialog.setVisible(true);
+    }
+
+    private List<String> getFriendsList() {
+        List<String> friends = new ArrayList<>();
+        try {
+            // Get all users and check which ones are friends
+            DBUserDataAccessObject userDAO = new DBUserDataAccessObject(new CommonUserFactory());
+            List<String> allUsers = userDAO.getAllUsers();
+
+            // Create friend DAO to check friendship status
+            DBFriendRequestDataAccessObject friendDAO = new DBFriendRequestDataAccessObject(userDAO);
+
+            for (String user : allUsers) {
+                if (!user.equals(username) && friendDAO.areFriends(username, user)) {
+                    friends.add(user);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return friends;
+    }
+
+            /**
+             * Loads an image from URL off the EDT and sets it scaled to the imageLabel.
+             */
     private void loadImageAsync(String urlString) {
         imageLabel.setText("No image available");
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
