@@ -2,7 +2,9 @@ package interface_adapter.preferences;
 
 import entity.Preferences;
 import use_case.preferences.get_preferences.GetPreferencesInputBoundary;
+import use_case.preferences.get_preferences.GetPreferencesInputData;
 import use_case.preferences.save_preferences.SavePreferencesInputBoundary;
+import use_case.preferences.save_preferences.SavePreferencesInputData;
 
 public class PreferencesController {
     private final GetPreferencesInputBoundary getInteractor;
@@ -15,11 +17,12 @@ public class PreferencesController {
     }
 
     public void loadPreferences(String username) {
-        getInteractor.execute(username);
+        getInteractor.execute(new GetPreferencesInputData(username));
     }
 
     public void savePreferences(String username, Preferences prefs) {
-        saveInteractor.execute(username, prefs);
+
+        saveInteractor.execute(new SavePreferencesInputData(username, prefs));
     }
 }
 

@@ -107,14 +107,15 @@ public class RecipeCardPanel extends JPanel {
      * Loads the recipe image on a background thread,
      * then sets it on the imageLabel when done.
      */
+
     private void loadImageAsync(String urlString) {
         // show text placeholder immediately
         imageLabel.setText("No image available");
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imageLabel.setVerticalAlignment(SwingConstants.CENTER);
-        imageLabel.setPreferredSize(new Dimension(120, 90)); // keeps layout stable
+        imageLabel.setPreferredSize(new Dimension(120, 90));
         imageLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-        imageLabel.setIcon(null); // ensure no old image stays
+        imageLabel.setIcon(null);
 
         // if there's no URL, just leave the placeholder
         if (urlString == null || urlString.isBlank()) {
