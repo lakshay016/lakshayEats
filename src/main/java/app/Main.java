@@ -69,7 +69,7 @@ public class Main {
                 String currentUsername = loggedInViewModel.getState().getUsername();
 
                 // Build the shell using your factory
-                JPanel shell = view.AppShellFactory.create(currentUsername, userDataAccessObject, viewManagerModel);
+                JPanel shell = AppShellFactory.create(currentUsername, userDataAccessObject, viewManagerModel);
 
                 // Register it with the same CardLayout container
                 views.add(shell, "app");

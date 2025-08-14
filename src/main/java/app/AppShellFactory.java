@@ -1,4 +1,4 @@
-package view;
+package app;
 
 import javax.swing.*;
 
@@ -34,6 +34,9 @@ import use_case.preferences.save_preferences.SavePreferencesInteractor;
 import use_case.preferences.save_preferences.SavePreferencesOutputBoundary;
 
 import view.AccountPage;
+import view.AppShell;
+import view.FeedPage;
+import view.FriendsPage;
 
 public final class AppShellFactory {
     private AppShellFactory() {}
